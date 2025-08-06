@@ -1,34 +1,52 @@
+# Базовый образ с PHP 8.3 и Node.js
 FROM php:8.3-fpm
 
-# Установим зависимости
+# Установим системные зависимости и расширения PHP
 RUN apt-get update && apt-get install -y \
-    build-essential \
+    git \
+    curl \
+    unzip \
+    zip \
     libpng-dev \
     libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    curl \
-    git \
-    libpq-dev \
     libzip-dev \
     libicu-dev \
-    && docker-php-ext-install pdo pdo_pgsql mbstring zip exif pcntl bcmath gd intl
+    libxml2-dev \
+    libpq-dev \
+    nodejs \
+    npm \
+    && docker-php-ext-install \
+        pdo \
+        pdo_pgsql \
+        mbstring \
+        zip \
+        exif \
+        pcntl \
+        bcmath \
+        gd \
+        intl \
+        dom \
+        xml
 
-# Установим Composer
+# Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Установка рабочего каталога
+# Установка рабочей директории
 WORKDIR /var/www
 
-# Копирование кода
-COPY . /var/www
-
-# Установка зависимостей Laravel
+# Копируем зависимости отдельно, чтобы использовать кэш
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader
 
-# Установка прав
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Копируем остальной код
+COPY . .
+
+# Установка Node.js зависимостей и билд ассетов
+RUN npm install && npm run build
+
+# Установка прав доступа
+RUN chown -R www-data:www-data storage bootstrap/cache
 
 EXPOSE 9000
+
 CMD ["php-fpm"]
