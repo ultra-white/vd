@@ -139,7 +139,7 @@ RUN chmod +x /usr/local/bin/start-container
 
 RUN cat .docker/utilities.sh >> ~/.bashrc
 
-EXPOSE 8000
+EXPOSE 9000
 
 ENTRYPOINT ["start-container"]
 
