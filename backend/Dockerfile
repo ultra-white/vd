@@ -34,12 +34,13 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Установка рабочей директории
 WORKDIR /var/www
 
+# Копируем остальной код
+COPY . .
+
 # Копируем зависимости отдельно, чтобы использовать кэш
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader
 
-# Копируем остальной код
-COPY . .
 
 # Установка Node.js зависимостей и билд ассетов
 RUN npm install && npm run build
