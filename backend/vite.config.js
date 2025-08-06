@@ -10,6 +10,18 @@ export default defineConfig({
         }),
         tailwindcss(),
     ],
+    build: {
+        manifest: true,
+        outDir: "public/build",
+        rollupOptions: {
+            input: ["resources/css/app.css", "resources/js/app.js"],
+        },
+    },
+    resolve: {
+        alias: {
+            "@filament": "/vendor/filament/filament/resources/js",
+        },
+    },
     server: {
         cors: true,
     },
