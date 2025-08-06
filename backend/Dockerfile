@@ -10,9 +10,9 @@ WORKDIR /var/www
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader
-
-RUN php artisan key:generate \
+RUN composer install --no-dev --optimize-autoloader \
+    && php artisan key:generate \
+    && php artisan vendor:publish --tag=filament-assets \
     && php artisan config:cache \
     && php artisan route:cache \
     && php artisan view:cache
