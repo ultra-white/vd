@@ -22,7 +22,7 @@ services:
     depends_on:
       - certbot
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./docker/nginx/ventodoro.conf:/etc/nginx/conf.d/ventodoro.conf
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
     networks:
