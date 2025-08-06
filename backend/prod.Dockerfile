@@ -1,6 +1,5 @@
 FROM php:8.3-fpm
 
-# Установи нужные расширения (если ещё нет)
 RUN apt update && apt install -y \
     libpq-dev zip unzip git curl libzip-dev libonig-dev libxml2-dev libicu-dev \
     && docker-php-ext-install pdo pdo_pgsql intl zip dom
@@ -15,6 +14,9 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN php artisan key:generate \
     && php artisan config:cache \
-    && php artisan route:cache
+    && php artisan route:cache \
+    && php artisan view:cache
 
-EXPOSE 8000
+EXPOSE 9000
+
+CMD ["php-fpm"]
