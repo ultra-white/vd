@@ -41,6 +41,7 @@ COPY . .
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader
 
+CMD php artisan key:generate
 
 # Установка Node.js зависимостей и билд ассетов
 RUN npm install && npm run build
