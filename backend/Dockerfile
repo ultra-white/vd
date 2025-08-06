@@ -1,25 +1,33 @@
-FROM php:8.3-fpm
+FROM php:8.2-fpm
 
-RUN apt update && apt install -y \
-    libpq-dev zip unzip git curl libzip-dev libonig-dev libxml2-dev libicu-dev \
-    && docker-php-ext-install pdo pdo_pgsql intl zip dom
+# Установим зависимости
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    curl \
+    git \
+    libpq-dev \
+    libzip-dev \
+    && docker-php-ext-install pdo pdo_pgsql mbstring zip exif pcntl bcmath gd
 
+# Установим Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Установка рабочего каталога
 WORKDIR /var/www
 
-COPY . .
+# Копирование кода
+COPY . /var/www
 
-RUN composer install --no-dev --optimize-autoloader \
+# Установка зависимостей Laravel
+RUN composer install --no-dev --optimize-autoloader
 
-RUN php artisan vendor:publish --tag=filament-assets \
-    && php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
-
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Установка прав
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 9000
-
 CMD ["php-fpm"]
