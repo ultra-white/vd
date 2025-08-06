@@ -1,0 +1,83 @@
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: prod.Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - ventodoro
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - frontend
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx:/etc/nginx/conf.d
+    networks:
+      - ventodoro
+
+  backend:
+    container_name: backend
+    build:
+      context: ./backend
+      dockerfile: prod.Dockerfile
+    restart: always
+    volumes:
+      - ./backend:/var/www
+    networks:
+      - ventodoro
+    depends_on:
+      - nginx
+      - database
+    expose:
+      - "9000"
+
+  database:
+    image: postgres:17.4
+    shm_size: 1gb
+    container_name: database
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
+      POSTGRES_DB: ${DB_DATABASE}
+    secrets:
+      - postgres-passwd
+    networks:
+      - ventodoro
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./backend/psql/data:/var/lib/postgresql/data
+    restart: always
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    entrypoint: >
+      sh -c "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet && nginx -s reload; sleep 12h; done"
+    networks:
+      - ventodoro
+
+# Define a network, which allows containers to communicate
+# with each other, by using their container name as a hostname
+networks:
+  ventodoro:
+    driver: bridge
+
+secrets:
+  postgres-passwd:
+    environment: DB_PASSWORD

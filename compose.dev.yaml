@@ -1,0 +1,74 @@
+services:
+  frontend:
+    container_name: frontend
+    build:
+      context: ./frontend
+      dockerfile: dev.Dockerfile
+
+    # Set environment variables directly in the compose file
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+
+    # Set environment variables based on the .env file
+    env_file:
+      - .env
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+    restart: always
+    ports:
+      - 3000:3000
+    networks:
+      - ventodoro-dev
+
+  database:
+    image: postgres:17.4
+    shm_size: 1gb
+    container_name: database
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
+      POSTGRES_DB: ${DB_DATABASE}
+    secrets:
+      - postgres-passwd
+    networks:
+      - ventodoro-dev
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - ./backend/psql/data:/var/lib/postgresql/data
+    restart: always
+
+  laravel:
+    container_name: laravel
+    build:
+      context: ./backend
+      dockerfile: dev.Dockerfile
+    volumes:
+      - ./backend:/var/www
+    restart: always
+    ports:
+      - 8000:8000
+    networks:
+      - ventodoro-dev
+    depends_on:
+      - database
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+  # Add more containers below (nginx, postgres, etc.)
+
+# Define a network, which allows containers to communicate
+# with each other, by using their container name as a hostname
+networks:
+  ventodoro-dev:
+    driver: bridge
+
+secrets:
+  postgres-passwd:
+    environment: DB_PASSWORD

@@ -1,0 +1,8 @@
+export { default as About } from './About'
+export { default as CareGuideBanner } from './CareGuideBanner'
+export { default as CurrentCollection } from './CurrentCollection'
+export { default as Delivery } from './Delivery'
+export { default as Gallery } from './Gallery'
+export { default as Hero } from './Hero'
+export { default as OurProduction } from './OurProduction'
+export { default as ShowCase } from './ShowCase'
