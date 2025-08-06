@@ -21,7 +21,6 @@ services:
       - "443:443"
     depends_on:
       - certbot
-      - app
     volumes:
       - ./docker/nginx/ventodoro.conf:/etc/nginx/conf.d/ventodoro.conf
       - ./docker/nginx/admin.ventodoro.conf:/etc/nginx/conf.d/admin.ventodoro.conf
