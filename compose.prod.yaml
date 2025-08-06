@@ -35,8 +35,6 @@ services:
       context: ./backend
       dockerfile: prod.Dockerfile
     restart: always
-    volumes:
-      - ./backend:/var/www
     networks:
       - ventodoro
     depends_on:
