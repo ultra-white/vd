@@ -22,7 +22,7 @@ services:
     depends_on:
       - frontend
     volumes:
-      - ./:/var/www
+      - /var/www/certbot:/var/www/certbot
       - ./docker/nginx:/etc/nginx/conf.d
     networks:
       - ventodoro
