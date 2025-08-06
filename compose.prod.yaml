@@ -37,7 +37,6 @@ services:
     working_dir: /var/www
     restart: always
     volumes:
-      - ./backend:/var/www
       - ./backend/.env:/var/www/.env
     networks:
       - ventodoro
