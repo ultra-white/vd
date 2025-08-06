@@ -1,10 +1,4 @@
-# ----------------------------------------
-# Build Stage: PHP extensions + Composer + Node
-# ----------------------------------------
-ARG PHP_VERSION=8.3
-ARG COMPOSER_VERSION=2
-
-FROM php:${PHP_VERSION}-alpine AS builder
+FROM php:8.2-alpine AS builder
 
 # Устанавливаем системные зависимости и расширения для сборки
 RUN apk update \
@@ -33,7 +27,7 @@ RUN apk update \
     && rm -rf /var/cache/apk/*
 
 # Устанавливаем Composer из официального образа
-COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
@@ -61,7 +55,7 @@ RUN rm -rf node_modules
 # ----------------------------------------
 # Production Stage: runtime
 # ----------------------------------------
-FROM php:${PHP_VERSION}-alpine AS production
+FROM php:8.3-alpine AS production
 
 # Устанавливаем только runtime-библиотеки и расширения
 RUN apk update \
