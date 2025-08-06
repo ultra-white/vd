@@ -23,6 +23,7 @@ services:
       - certbot
     volumes:
       - ./docker/nginx/ventodoro.conf:/etc/nginx/conf.d/ventodoro.conf
+      - ./docker/nginx/admin.ventodoro.conf:/etc/nginx/conf.d/admin.ventodoro.conf
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
     networks:
