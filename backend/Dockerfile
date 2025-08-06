@@ -1,26 +1,27 @@
 # ----------------------------------------
-# Build Stage: PHP extensions + Composer
+# Build Stage: PHP extensions + Composer + Node
 # ----------------------------------------
-ARG PHP_VERSION=8.3-alpine
+ARG PHP_VERSION=8.3
 ARG COMPOSER_VERSION=2
 
-FROM php:${PHP_VERSION} AS builder
+FROM php:${PHP_VERSION}-alpine AS builder
 
-# Install system dependencies and PHP extensions
+# Устанавливаем системные зависимости и расширения для сборки
 RUN apk update \
     && apk add --no-cache \
        git \
        unzip \
-       libzip \
-       libpng \
-       libjpeg-turbo \
-       freetype \
-       nodejs \
-       npm \
+       libzip-dev \
+       libpng-dev \
+       libjpeg-turbo-dev \
+       freetype-dev \
        oniguruma-dev \
        libxml2-dev \
        icu-dev \
        postgresql-dev \
+       nodejs \
+       npm \
+    && docker-php-ext-configure zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
        pdo \
@@ -31,31 +32,38 @@ RUN apk update \
        gd \
     && rm -rf /var/cache/apk/*
 
-# Install Composer
+# Устанавливаем Composer из официального образа
 COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
-# Copy PHP dependencies for build
+# Копируем зависимые файлы и устанавливаем PHP-зависимости
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --optimize-autoloader --classmap-authoritative
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --optimize-autoloader \
+    --classmap-authoritative \
+    --no-scripts
 
-# Copy full application
+# Копируем весь код приложения и запускаем скрипты discovery
 COPY . .
+RUN composer dump-autoload --optimize --classmap-authoritative \
+    && php artisan package:discover --ansi
 
-# Generate optimized autoload including scripts
-RUN composer dump-autoload --optimize --classmap-authoritative && \
-    php artisan package:discover --ansi
+# Собираем фронтенд-ассеты
+RUN npm ci \
+    && npm run build
 
-# Build frontend assets
-RUN npm ci && npm run build
+# Очищаем build-кэши npm
+RUN rm -rf node_modules
 
 # ----------------------------------------
-# Production Stage: application runtime
+# Production Stage: runtime
 # ----------------------------------------
-FROM php:${PHP_VERSION}
+FROM php:${PHP_VERSION}-alpine AS production
 
-# Install runtime PHP extensions
+# Устанавливаем только runtime-библиотеки и расширения
 RUN apk update \
     && apk add --no-cache \
        libzip \
@@ -64,31 +72,33 @@ RUN apk update \
        freetype \
        icu \
        postgresql-client \
+    && docker-php-ext-configure zip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
        pdo_pgsql \
-       gd \
        zip \
+       gd \
        intl \
     && rm -rf /var/cache/apk/*
 
 WORKDIR /var/www/html
 
-# Copy built app from builder
+# Копируем файлы из builder-а
 COPY --from=builder /app /var/www/html
 
-# Caches and publish Filament assets
-RUN php artisan vendor:publish --tag=filament-assets --force && \
-    php artisan config:cache && \
-    php artisan route:cache && \
-    php artisan view:cache
+# Кэшируем конфигурацию Laravel и публикуем assets
+RUN php artisan vendor:publish --tag=filament-assets --force \
+    && php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
 
-# Set permissions
-RUN chown -R www-data:www-data storage bootstrap/cache && \
-    chmod -R 775 storage bootstrap/cache
+# Правим права на директории кэша и логов
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
 
-# Expose PHP-FPM port
+# Expose PHP-FPM порт
 EXPOSE 9000
 
-# Start PHP-FPM
+# Запускаем FPM
+USER www-data
 CMD ["php-fpm"]
