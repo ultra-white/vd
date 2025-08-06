@@ -33,7 +33,7 @@ services:
     container_name: backend
     build:
       context: ./backend
-      dockerfile: prod.Dockerfile
+      dockerfile: Dockerfile
     restart: always
     networks:
       - ventodoro

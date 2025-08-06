@@ -1,23 +1,15 @@
-.PHONY: build-dev
-build-dev:
-	docker compose -f compose.dev.yaml build
-
-.PHONY: start-dev
-start-dev:
-	docker compose -f compose.dev.yaml up -d
-
-.PHONY: stop-dev
-stop-dev:
-	docker compose -f compose.dev.yaml down
-  
-.PHONY: build-prod
+.PHONY: build
 build-prod:
 	docker compose -f compose.prod.yaml build
 
-.PHONY: start-prod
-start-prod:
+.PHONY: start
 	docker compose -f compose.prod.yaml up -d
 
-.PHONY: stop-prod
+.PHONY: stop
 stop-prod:
 	docker compose -f compose.prod.yaml down
+
+.PHONY: repull
+	docker compose -f compose.prod.yaml down
+	docker compose -f compose.prod.yaml build
+	docker compose -f compose.prod.yaml up -d
