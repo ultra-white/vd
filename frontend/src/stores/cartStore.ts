@@ -7,7 +7,7 @@ export interface CartItem {
   id: string
   name: string
   image: string
-  price: string
+  price: number
   quantity: number
   size: string
 }
@@ -68,7 +68,7 @@ export const useCartStore = create<CartState>()(
         get().items.reduce((acc, item) => acc + item.quantity, 0),
     }),
     {
-      name: 'cart-storage',
+      name: 'cart',
     },
   ),
 )

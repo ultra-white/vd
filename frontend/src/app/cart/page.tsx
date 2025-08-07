@@ -50,11 +50,12 @@ export default function CartPage() {
                     className="shrink-0 overflow-hidden"
                   >
                     <Image
-                      src={item.image}
+                      src={`${item.image}`}
                       alt={item.name}
                       width={240}
                       height={320}
                       className="h-[225px] w-fit object-cover md:h-[315px] md:w-full"
+                      unoptimized
                     />
                   </Link>
 

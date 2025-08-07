@@ -11,16 +11,14 @@ const sizes = ['XS', 'S', 'M']
 
 interface Product {
   name: string
-  price: string
+  price: number
   image: string
   images?: string[]
-  details?: {
-    description: string
-    structure: string
-    season: string
-    product_parameters: string
-    model_parameters: string
-  }
+  description?: string
+  structure?: string
+  season?: string
+  product_parametres?: string
+  model_parametres?: string
 }
 
 export default function ProductPage() {
@@ -34,18 +32,36 @@ export default function ProductPage() {
     const fetchProduct = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/product/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}?populate=image&populate=images`,
           {
             headers: {
-              Accept: 'application/json',
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
             },
           },
         )
-        if (!res.ok) throw new Error('Product not found')
-        const data = await res.json()
-        setProduct(data)
+        const json = await res.json()
+        const productData = json.data
+        if (!productData) return
+
+        const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${productData.image.url || productData.image?.url || ''}`
+        const images = (productData.images || []).map(
+          (img: { url: string }) =>
+            `${process.env.NEXT_PUBLIC_API_URL}${img.url}`,
+        )
+
+        setProduct({
+          name: productData.name,
+          price: productData.price,
+          image: imageUrl,
+          images: images,
+          description: productData.description,
+          structure: productData.structure,
+          season: productData.season,
+          product_parametres: productData.product_parametres,
+          model_parametres: productData.model_parametres,
+        })
       } catch (err) {
-        console.error(err)
+        console.error('Ошибка при загрузке товара:', err)
       }
     }
 
@@ -83,6 +99,7 @@ export default function ProductPage() {
                 width={1000}
                 height={1000}
                 className="max-h-[90vh] w-auto cursor-zoom-out object-contain"
+                unoptimized
               />
             </button>
           )}
@@ -94,14 +111,15 @@ export default function ProductPage() {
               {/* Галерея */}
               <div className="flex flex-col-reverse justify-center gap-[10px] not-md:items-center md:flex-row lg:gap-4">
                 <div className="flex gap-4 overflow-auto md:flex-col">
-                  {(product.images ?? [product.image]).map((src, index) => (
-                    <button key={index} onClick={() => setZoomedImage(src)}>
+                  {(product.images ?? [product.image]).map((url, index) => (
+                    <button key={index} onClick={() => setZoomedImage(url)}>
                       <Image
-                        src={src}
+                        src={url}
                         alt={`${product.name} ${index + 1}`}
                         width={600}
                         height={600}
                         className="h-[65px] w-[65px] cursor-zoom-in object-cover object-top grayscale transition hover:grayscale-0 md:h-[150px] md:w-[150px]"
+                        unoptimized
                       />
                     </button>
                   ))}
@@ -117,6 +135,7 @@ export default function ProductPage() {
                     width={676}
                     height={898}
                     className="h-[452px] max-h-screen object-cover object-top md:h-[898px]"
+                    unoptimized
                   />
                 </button>
               </div>
@@ -201,7 +220,7 @@ export default function ProductPage() {
                   Описание
                 </h3>
                 <p className="mt-[20px] text-[16px] lg:text-[18px]">
-                  {product.details?.description}
+                  {product.description}
                 </p>
 
                 {/* Характеристики */}
@@ -211,19 +230,19 @@ export default function ProductPage() {
                 <ul className="mt-[25px] space-y-[20px] text-[16px] leading-none lg:mt-[20px] lg:text-[24px]">
                   <li>
                     <span className="text-black/60">Состав:</span>{' '}
-                    {product.details?.structure}
+                    {product.structure}
                   </li>
                   <li>
                     <span className="text-black/60">Сезон:</span>{' '}
-                    {product.details?.season}
+                    {product.season}
                   </li>
                   <li>
                     <span className="text-black/60">Параметры изделия:</span>{' '}
-                    {product.details?.product_parameters}
+                    {product.product_parametres}
                   </li>
                   <li>
                     <span className="text-black/60">Параметры модели:</span>{' '}
-                    {product.details?.model_parameters}
+                    {product.model_parametres}
                   </li>
                 </ul>
 

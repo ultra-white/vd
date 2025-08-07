@@ -4,14 +4,11 @@ services:
     build:
       context: ./frontend
       dockerfile: dev.Dockerfile
-
-    # Set environment variables directly in the compose file
-    environment:
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-
-    # Set environment variables based on the .env file
     env_file:
       - .env
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      NEXT_PUBLIC_STRAPI_TOKEN: ${NEXT_PUBLIC_STRAPI_TOKEN}
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
@@ -23,52 +20,43 @@ services:
 
   database:
     image: postgres:17.4
-    shm_size: 1gb
     container_name: database
     environment:
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-passwd
-      POSTGRES_DB: ${DB_DATABASE}
-    secrets:
-      - postgres-passwd
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./psql/data:/var/lib/postgresql/data
+    restart: always
     networks:
       - ventodoro-dev
-    ports:
-      - "127.0.0.1:5432:5432"
-    volumes:
-      - ./backend/psql/data:/var/lib/postgresql/data
-    restart: always
 
-  laravel:
-    container_name: laravel
+  backend:
+    container_name: backend
     build:
       context: ./backend
       dockerfile: dev.Dockerfile
+    environment:
+      DATABASE_CLIENT: ${DATABASE_CLIENT}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USERNAME: ${DATABASE_USERNAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      NODE_ENV: ${NODE_ENV}
     volumes:
-      - ./backend:/var/www
-    restart: always
+      - ./backend:/app
+      - /app/node_modules
     ports:
-      - 8000:8000
-    networks:
-      - ventodoro-dev
+      - 1337:1337
     depends_on:
       - database
-    environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: database
-      DB_PORT: 5432
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - ventodoro-dev
+    restart: always
 
-  # Add more containers below (nginx, postgres, etc.)
-
-# Define a network, which allows containers to communicate
-# with each other, by using their container name as a hostname
 networks:
   ventodoro-dev:
     driver: bridge
-
-secrets:
-  postgres-passwd:
-    environment: DB_PASSWORD

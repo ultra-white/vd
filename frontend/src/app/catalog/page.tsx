@@ -9,13 +9,26 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([])
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`)
-      .then((res) => res.json())
-      .then((data) => setProducts(data))
-      .catch(console.error)
-  }, [])
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products?populate=image`,
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
+            },
+          },
+        )
 
-  console.log('Products:', products)
+        const json = await res.json()
+        setProducts(json.data || [])
+      } catch (err) {
+        console.error('Ошибка при загрузке товаров:', err)
+      }
+    }
+
+    fetchProducts()
+  }, [])
 
   return (
     <>
@@ -26,7 +39,7 @@ export default function Home() {
           {products.map((product) => (
             <div key={product.id} className="flex items-center justify-center">
               <ProductCard
-                id={product.slug}
+                id={product.documentId}
                 image={product.image}
                 name={product.name}
                 price={product.price}
