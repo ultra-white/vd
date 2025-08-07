@@ -1,71 +1,64 @@
-# syntax=docker/dockerfile:1.7
-# ---------- STAGE 1: build ----------
-FROM node:20-slim AS builder
-
+# ---- 1) Установка зависимостей ----
+FROM node:20-bookworm AS deps
 WORKDIR /app
-ENV NODE_ENV=development \
-    # Больше попыток и таймауты для npm (боремся с 503)
-    NPM_CONFIG_FETCH_RETRIES=6 \
-    NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=20000 \
-    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000 \
-    NPM_CONFIG_FUND=false \
-    NPM_CONFIG_AUDIT=false \
-    CI=true
 
-# Копируем только манифесты (лучший кеш)
-COPY package*.json ./
+# build-аргументы (чтобы не падало при передаче их через docker-compose)
+ARG DATABASE_CLIENT
+ARG DATABASE_HOST
+ARG DATABASE_PORT
+ARG DATABASE_NAME
+ARG DATABASE_USERNAME
+ARG DATABASE_PASSWORD
+ARG NODE_ENV=production
 
-# Установка зависимостей c кешем и ретраями
-# Если lock рассинхронизирован — fallback на npm install
-RUN --mount=type=cache,target=/root/.npm \
-    set -e; \
-    install_cmd() { \
-      if [ -f package-lock.json ]; then \
-        npm ci || (echo "Lock mismatch, fallback to npm install" >&2; npm install); \
-      else \
-        npm install; \
-      fi; \
-    }; \
-    tries=0; \
-    until install_cmd; do \
-      tries=$((tries+1)); \
-      if [ "$tries" -ge 5 ]; then echo "npm install failed after $tries attempts" >&2; exit 1; fi; \
-      echo "npm failed (attempt $tries), retrying in ${tries}s..." >&2; \
-      sleep "$tries"; \
-    done
+# Копируем манифесты для кеша установки
+COPY package.json package-lock.json* ./
+RUN npm ci
 
-# Копируем остальной код
+# ---- 2) Сборка проекта ----
+FROM node:20-bookworm AS build
+WORKDIR /app
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-
-# Сборка админки/бэка
-ENV NODE_ENV=production
 RUN npm run build
 
-# Убираем dev-зависимости
-RUN --mount=type=cache,target=/root/.npm npm prune --omit=dev
-
-
-# ---------- STAGE 2: runtime ----------
-FROM node:20-slim AS runtime
-
+# ---- 3) Production-образ ----
+FROM node:20-slim AS prod
 WORKDIR /app
-ENV NODE_ENV=production
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-      dumb-init ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
+# build-аргументы для совместимости с docker-compose
+ARG DATABASE_CLIENT
+ARG DATABASE_HOST
+ARG DATABASE_PORT
+ARG DATABASE_NAME
+ARG DATABASE_USERNAME
+ARG DATABASE_PASSWORD
+ARG NODE_ENV=production
 
-COPY --from=builder /app /app
+# runtime-переменные
+ENV NODE_ENV=${NODE_ENV} \
+    HOST=0.0.0.0 \
+    PORT=1337 \
+    STRAPI_TELEMETRY_DISABLED=true
 
-RUN useradd -r -s /usr/sbin/nologin strapi \
- && chown -R strapi:strapi /app
+# Устанавливаем только prod-зависимости
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev
 
-VOLUME ["/app/public/uploads"]
+# Копируем нужные директории
+COPY --from=build /app/build ./build
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/config ./config
+COPY --from=build /app/public ./public
+# Если проект на чистом JS без dist:
+# COPY --from=build /app/src ./src
 
 EXPOSE 1337
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=5 \
-  CMD node -e "fetch('http://127.0.0.1:1337/admin').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s --retries=5 \
+  CMD node -e "require('http').get('http://localhost:1337/_health', r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
 
-USER strapi
-CMD ["dumb-init", "npm", "run", "start"]
+CMD ["npm", "run", "start"]
