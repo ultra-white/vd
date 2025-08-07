@@ -97,4 +97,4 @@ networks:
 
 secrets:
   postgres-passwd:
-    environment: DB_PASSWORD
+    environment: DATABASE_PASSWORD
