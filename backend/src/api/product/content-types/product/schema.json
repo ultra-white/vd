@@ -32,6 +32,14 @@
     "quantity": {
       "type": "integer",
       "required": true
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }
