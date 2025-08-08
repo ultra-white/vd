@@ -24,11 +24,11 @@ const Footer = () => {
                   Контакты
                 </p>
                 <div className="mt-[12px] flex flex-col gap-[8px] text-[10px] underline xl:mt-[25px] xl:gap-[15px] xl:text-[24px]">
-                  <Link href={'https://t.me'} target="_blank">
+                  <Link href={'https://t.me/VENTO_DORO'} target="_blank">
                     Telegram support
                   </Link>
-                  <Link href={'email:info@ventodoro.fi'} target="_blank">
-                    info@ventodoro.fi
+                  <Link href={'email:ventodoro@yandex.ru'} target="_blank">
+                    ventodoro@yandex.ru
                   </Link>
                 </div>
               </div>
@@ -39,7 +39,7 @@ const Footer = () => {
                       Социальные <br /> сети
                     </p>
                     <div className="mt-[12px] flex gap-[10px] xl:mt-[25px] xl:gap-[15px] xl:text-[24px]">
-                      <Link href={'https://t.me'} target="_blank">
+                      <Link href={'https://t.me/VENTODORO'} target="_blank">
                         <Image
                           src={'/images/telegram-rounded.svg'}
                           height={48}
@@ -48,21 +48,24 @@ const Footer = () => {
                           className="not-xl:w-[30px]"
                         />
                       </Link>
-                      <Link href={'https://instagram.com'} target="_blank">
+                      <Link
+                        href={'https://www.instagram.com/vento_doro_'}
+                        target="_blank"
+                      >
                         <Image
                           src={'/images/insta-rounded.svg'}
                           height={48}
                           width={48}
-                          alt="telegram"
+                          alt="instagram"
                           className="not-xl:w-[30px]"
                         />
                       </Link>
-                      <Link href={'https://vk.com'} target="_blank">
+                      <Link href={'https://vk.com/ventoo_doro'} target="_blank">
                         <Image
                           src={'/images/vk-rounded.svg'}
                           height={48}
                           width={48}
-                          alt="telegram"
+                          alt="vk"
                           className="not-xl:w-[30px]"
                         />
                       </Link>
@@ -71,7 +74,7 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-            <p className="mt-[10px] text-right text-[10px] text-white/70 md:max-w-[272px] lg:mt-[15px] xl:mt-[20px] xl:max-w-[338px] xl:max-w-[430px] xl:text-[12px]">
+            <p className="mt-[10px] text-right text-[10px] text-white/70 md:max-w-[272px] lg:mt-[15px] xl:mt-[20px] xl:max-w-[430px] xl:text-[12px]">
               *Instagram является продуктом компании Meta Platforms Inc.,
               которая признана экстремистской и запрещена на территории РФ
             </p>

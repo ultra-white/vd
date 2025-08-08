@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 
 const Delivery = () => {
   return (
@@ -77,16 +78,21 @@ const Delivery = () => {
               info@ventodoro.fi
             </a>
           </div>
-          <button className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-full bg-white px-1 py-[6px] text-[10px] text-black transition hover:bg-white/90 sm:mt-[8px] lg:mt-[16px] lg:gap-2 lg:text-[16px] xl:py-2 3xl:text-[24px]">
-            Связаться с нами
-            <Image
-              src="/images/telegram-dark.svg"
-              alt="Поддержка"
-              width={10}
-              height={10}
-              className="h-[10px] lg:h-[12px]"
-            />
-          </button>
+          <Link
+            href={'https://t.me/VENTO_DORO'}
+            className="rounded-full sm:mt-[8px] lg:mt-[16px]"
+          >
+            <button className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-full bg-white px-1 py-[6px] text-[10px] text-black transition hover:bg-white/90 lg:gap-2 lg:text-[16px] xl:py-2 3xl:text-[24px]">
+              Связаться с нами
+              <Image
+                src="/images/telegram-dark.svg"
+                alt="Поддержка"
+                width={30}
+                height={30}
+                className="h-[10px] lg:h-[12px] xl:h-[24px]"
+              />
+            </button>
+          </Link>
         </div>
       </div>
     </section>

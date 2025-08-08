@@ -27,7 +27,7 @@ const Header = ({ style = 'light' }) => {
       </nav>
       <Logo isDark={isDark} />
       <Link
-        href={'https://t.me'}
+        href={'https://t.me/VENTO_DORO'}
         target="blank"
         className="flex items-center gap-1 lg:gap-5"
       >
@@ -36,10 +36,10 @@ const Header = ({ style = 'light' }) => {
           src={
             isDark ? '/images/telegram-light.svg' : '/images/telegram-dark.svg'
           }
-          height={17}
-          width={19}
+          height={25}
+          width={27}
           alt="telegram"
-          className="w-[12px] lg:my-[25px] lg:w-[19px]"
+          className="w-[12px] md:w-[16px] lg:my-[24px] lg:w-[19px] xl:w-[24px] 2xl:w-[27px]"
         />
       </Link>
     </header>
