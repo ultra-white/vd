@@ -1,3 +1,4 @@
+# DEV COMMANDS
 .PHONY: build-dev
 build-dev:
 	docker compose -f compose.dev.yaml build
@@ -10,7 +11,13 @@ start-dev:
 stop-dev:
 	docker compose -f compose.dev.yaml down
 
+.PHONY: rebuild-dev
+rebuild-dev:
+	docker compose -f compose.dev.yaml build
+	docker compose -f compose.dev.yaml down
+	docker compose -f compose.dev.yaml up -d
 
+# PROD COMMANDS
 .PHONY: build-prod
 build-prod:
 	docker compose -f compose.prod.yaml build
