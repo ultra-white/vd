@@ -40,6 +40,31 @@
       "allowedTypes": [
         "images"
       ]
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 255,
+      "required": true
+    },
+    "structure": {
+      "type": "string",
+      "maxLength": 75,
+      "required": true
+    },
+    "season": {
+      "type": "string",
+      "maxLength": 75,
+      "required": true
+    },
+    "product_parametres": {
+      "type": "string",
+      "maxLength": 75,
+      "required": true
+    },
+    "model_parametres": {
+      "type": "string",
+      "maxLength": 75,
+      "required": true
     }
   }
 }
