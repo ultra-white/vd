@@ -166,7 +166,7 @@ export default function CartPage() {
               <Button
                 className="mt-[20px] text-[16px] lg:mt-[35px] lg:text-[24px]"
                 fullWidth
-                variant="dark"
+                theme="dark"
                 onClick={() => setIsCheckoutOpen(true)}
               >
                 Перейти к оформлению

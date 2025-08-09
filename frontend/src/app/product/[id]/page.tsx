@@ -205,7 +205,7 @@ export default function ProductPage() {
                     fullWidth
                     className="hover:none hover:bg-black/90"
                     onClick={handleAddToCart}
-                    variant="dark"
+                    theme="dark"
                   >
                     Добавить в корзину
                   </Button>
