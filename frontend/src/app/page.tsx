@@ -3,6 +3,7 @@ import {
   CareGuideBanner,
   CurrentCollection,
   Delivery,
+  Founders,
   Gallery,
   Hero,
   OurProduction,
@@ -24,6 +25,7 @@ export default function Home() {
         <CareGuideBanner />
         <Gallery />
         <OurProduction />
+        <Founders />
         <Delivery />
       </main>
       <Footer />

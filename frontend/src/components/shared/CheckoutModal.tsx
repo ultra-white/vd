@@ -3,46 +3,373 @@
 import { Button } from '@/components/shared'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
+import CheckoutInput from '../ui/CheckoutInput'
 
 interface CheckoutModalProps {
   onClose: () => void
 }
 
-type DeliveryMethod = 'courier' | 'boxberry' | 'cdek' | 'post'
+type DeliveryMethod = 'courier' | 'boxberry' | 'post'
 type PickupPoint = { id: string; address: string; name?: string }
+type CartItem = {
+  id: string | number // фронтовый id
+  strapiId?: number // желательно хранить id из Strapi
+  name: string
+  price: number | string
+  quantity: number
+  size?: string
+  image?: string
+}
 
-const options = [
+const options: { id: DeliveryMethod; label: string }[] = [
   { id: 'courier', label: 'Курьером по Москве' },
   { id: 'boxberry', label: 'Boxberry' },
-  { id: 'cdek', label: 'СДЭК' },
   { id: 'post', label: 'Почта России' },
-] as const
+]
+
+// Boxberry
+const BOXBERRY_SCRIPT_SRC = 'https://points.boxberry.ru/js/boxberry.js'
+const BOXBERRY_TOKEN = 'PASTE_YOUR_BOXBERRY_TOKEN'
+
+declare global {
+  interface Window {
+    boxberry?: {
+      open: (
+        cb: (data: {
+          id?: string | number
+          code?: string | number
+          name?: string
+          address?: string
+          [k: string]: unknown
+        }) => void,
+        token?: string,
+        custom_city?: string,
+        target_start?: string,
+        ordersum?: string | number,
+        weight?: string | number,
+        paysum?: string | number,
+        height?: string | number,
+        width?: string | number,
+        depth?: string | number,
+      ) => void
+      displaySettings?: (opts: { top?: number }) => void
+    }
+  }
+}
+
+function loadScript(src: string, id: string) {
+  return new Promise<void>((resolve, reject) => {
+    if (document.getElementById(id)) return resolve()
+    const s = document.createElement('script')
+    s.src = src
+    s.async = true
+    s.id = id
+    s.onload = () => resolve()
+    s.onerror = () => reject(new Error(`Failed to load ${src}`))
+    document.body.appendChild(s)
+  })
+}
 
 export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   const [step, setStep] = useState(1)
 
+  // корзина
+  const [cartItems, setCartItems] = useState<CartItem[]>([])
+  const [cartTotal, setCartTotal] = useState<number>(0)
+
+  // шаг 1
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+
+  // шаг 2
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>('courier')
+  const [city, setCity] = useState('')
+  const [street, setStreet] = useState('')
+  const [house, setHouse] = useState('')
+  const [apartment, setApartment] = useState('')
+  const [postalCode, setPostalCode] = useState('')
   const [boxberryPoint, setBoxberryPoint] = useState<PickupPoint | null>(null)
-  const [cdekPoint, setCdekPoint] = useState<PickupPoint | null>(null)
 
-  function openBoxberryMap() {
-    // TODO: интегрируй официальный виджет Boxberry и в колбэке:
-    // setBoxberryPoint({ id, address, name })
-  }
+  // шаг 3
+  const [paymentType, setPaymentType] = useState<'cash' | 'qr' | ''>('')
 
-  function openCdekMap() {
-    // TODO: интегрируй официальный виджет CDEK и в колбэке:
-    // setCdekPoint({ id, address, name })
-  }
+  // ui
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [triedStep1, setTriedStep1] = useState(false)
+  const [triedStep2, setTriedStep2] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
 
+  const phoneRe = /^\+?[0-9\s\-()]{10,20}$/
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  // загрузка корзины + запрет скролла
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow
     document.body.style.overflow = 'hidden'
+
+    const loadCart = () => {
+      const raw = localStorage.getItem('cart')
+      try {
+        if (!raw) throw new Error('no cart')
+        const parsed = JSON.parse(raw) as unknown
+        let items: CartItem[] = []
+        if (Array.isArray(parsed)) items = parsed as CartItem[]
+        else if (parsed && typeof parsed === 'object') {
+          const p = parsed as { items?: unknown; state?: { items?: unknown } }
+          if (Array.isArray(p.items)) items = p.items as CartItem[]
+          else if (p.state && Array.isArray(p.state.items))
+            items = p.state.items as CartItem[]
+        }
+        setCartItems(items)
+        setCartTotal(
+          items.reduce((s, it) => s + Number(it.price) * it.quantity, 0),
+        )
+      } catch {
+        setCartItems([])
+        setCartTotal(0)
+      }
+    }
+
+    loadCart()
+    const onStorage = (e: StorageEvent) => {
+      if (e.key && e.key !== 'cart') return
+      loadCart()
+    }
+    window.addEventListener('storage', onStorage)
+
     return () => {
+      window.removeEventListener('storage', onStorage)
       document.body.style.overflow = originalStyle
     }
   }, [])
+
+  // валидации
+  function validateStep1() {
+    const e: Record<string, string> = {}
+    if (!fullName.trim()) e.fullName = 'Укажите ФИО'
+    if (!phoneRe.test(phone)) e.phone = 'Неверный телефон'
+    if (email && !emailRe.test(email)) e.email = 'Неверная почта'
+
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next.fullName
+      delete next.phone
+      delete next.email
+      return { ...next, ...e }
+    })
+    return Object.keys(e).length === 0
+  }
+
+  function validateStep2() {
+    const e: Record<string, string> = {}
+    if (deliveryMethod === 'courier') {
+      if (!city.trim()) e.city = 'Город обязателен'
+      if (!street.trim()) e.street = 'Улица обязательна'
+      if (!house.trim()) e.house = 'Дом обязателен'
+    }
+    if (deliveryMethod === 'post') {
+      if (!city.trim()) e.city = 'Город обязателен'
+      if (!street.trim()) e.street = 'Улица обязательна'
+      if (!house.trim()) e.house = 'Дом обязателен'
+      if (!postalCode.trim()) e.postalCode = 'Индекс обязателен'
+    }
+    if (deliveryMethod === 'boxberry' && !boxberryPoint)
+      e.pickup = 'Выберите пункт Boxberry'
+
+    setErrors((prev) => {
+      const next = { ...prev }
+      delete next.city
+      delete next.street
+      delete next.house
+      delete next.postalCode
+      delete next.pickup
+      return { ...next, ...e }
+    })
+    return Object.keys(e).length === 0
+  }
+
+  async function openBoxberryMap() {
+    await loadScript(BOXBERRY_SCRIPT_SRC, 'boxberry-widget')
+    if (!window.boxberry) return
+    window.boxberry.displaySettings?.({ top: 10 })
+    window.boxberry.open(
+      (res) => {
+        const id = res.id ?? res.code
+        const address = res.address ?? ''
+        const name = res.name ?? 'ПВЗ Boxberry'
+
+        if (id && address) setBoxberryPoint({ id: String(id), address, name })
+      },
+      BOXBERRY_TOKEN,
+      '',
+      '',
+      1000,
+      500,
+      0,
+      30,
+      20,
+      10,
+    )
+  }
+
+  async function handleSubmit() {
+    const ok1 = validateStep1()
+    const ok2 = validateStep2()
+    const e: Record<string, string> = {}
+    if (!paymentType) e.paymentType = 'Выберите способ оплаты'
+    setErrors((prev) => ({ ...prev, ...e }))
+
+    if (!ok1) {
+      setTriedStep1(true)
+      setStep(1)
+      return
+    }
+    if (!ok2) {
+      setTriedStep2(true)
+      setStep(2)
+      return
+    }
+    if (Object.keys(e).length) {
+      setStep(3)
+      return
+    }
+    if (cartItems.length === 0) return
+
+    // готовим позиции: ВАЖНО — product = documentId (СТРОКА)
+    const itemsForPayload: {
+      product: string
+      quantity: number
+      size: string | null
+    }[] = []
+
+    for (const i of cartItems) {
+      const productDocumentId =
+        (typeof i.id === 'string' && i.id) || String(i.id ?? '')
+
+      if (
+        !productDocumentId ||
+        productDocumentId === 'null' ||
+        productDocumentId === 'undefined'
+      ) {
+        console.error('Нет documentId у товара:', i)
+        alert(
+          `Не удалось оформить: у товара "${i.name}" нет documentId из каталога. Обновите корзину.`,
+        )
+        return
+      }
+
+      itemsForPayload.push({
+        product: productDocumentId,
+        quantity: i.quantity,
+        size: i.size ?? null,
+      })
+    }
+
+    setSubmitting(true)
+    try {
+      const addr =
+        deliveryMethod === 'courier' || deliveryMethod === 'post'
+          ? `${city}, ${street}, дом ${house}${apartment ? `, кв. ${apartment}` : ''}${postalCode ? `, ${postalCode}` : ''}`
+          : boxberryPoint?.address || ''
+
+      // 1) создаём Order
+      const orderRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/orders`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
+          },
+          body: JSON.stringify({
+            data: {
+              full_name: fullName.trim(),
+              phone: phone.trim(),
+              email: email.trim() || null,
+              address: addr,
+              payment_type: paymentType, // 'cash' | 'qr'
+              // delivery_method: deliveryMethod, // если поле есть в модели — можно раскомментить
+            },
+          }),
+        },
+      )
+
+      if (!orderRes.ok) {
+        const raw = await orderRes.text()
+        console.error('Create order failed:', orderRes.status, raw)
+        alert('Ошибка оформления заказа (создание заказа). Попробуйте ещё раз.')
+        setSubmitting(false)
+        return
+      }
+
+      const orderJson = await orderRes.json()
+      const orderDocumentId: string | undefined =
+        orderJson?.data?.documentId ?? orderJson?.documentId
+
+      if (!orderDocumentId) {
+        console.error('No order documentId in response:', orderJson)
+        alert('Ошибка оформления заказа (нет documentId).')
+        setSubmitting(false)
+        return
+      }
+
+      // 2) создаём OrderItem для каждой позиции
+      for (const item of itemsForPayload) {
+        const itemRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/order-items`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
+            },
+            body: JSON.stringify({
+              data: {
+                product: item.product,
+                quantity: item.quantity,
+                size: item.size ? item.size.toLowerCase() : null,
+                order: orderDocumentId,
+              },
+            }),
+          },
+        )
+
+        if (!itemRes.ok) {
+          const raw = await itemRes.text()
+          console.error('Create order-item failed:', itemRes.status, raw)
+          alert('Ошибка оформления заказа (позиции). Попробуйте ещё раз.')
+          setSubmitting(false)
+          return
+        }
+      }
+
+      // успех
+      alert('Заказ оформлен! Мы свяжемся с вами.')
+
+      // очистка корзины в localStorage
+      try {
+        const raw = localStorage.getItem('cart')
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (parsed && typeof parsed === 'object' && parsed.state) {
+            parsed.state.items = []
+            localStorage.setItem('cart', JSON.stringify(parsed))
+          } else {
+            localStorage.removeItem('cart')
+          }
+        }
+      } catch {}
+
+      onClose()
+    } catch (err) {
+      console.error(err)
+      alert('Ошибка при оформлении заказа. Попробуйте позже.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div
@@ -66,37 +393,63 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
           />
         </button>
 
-        {/* Шаги */}
         {step === 1 && (
           <>
             <h2 className="text-center font-lighthaus text-[22px] leading-[1.1] sm:text-[26px] md:text-[30px]">
               Оформление заказа
             </h2>
-            <p className="mt-2 text-center text-[14px] leading-[1.05] text-black/60 sm:text-[16px] md:text-[18px]">
-              1/3
-            </p>
+            <p className="mt-2 text-center text-[14px] text-black/60">1/3</p>
 
-            <input
-              type="text"
+            <CheckoutInput
+              name="full_name"
+              value={fullName}
+              onChange={setFullName}
               placeholder="Введите ФИО"
-              className="mt-8 w-full border-b py-2 text-[16px] outline-none placeholder:text-black/40 sm:text-[18px] md:mt-10 md:py-[10px] md:text-[20px]"
               required
+              error={errors.fullName}
+              showErrorNow={triedStep1}
             />
-            <input
-              type="tel"
+
+            <CheckoutInput
+              name="phone"
+              value={phone}
+              onChange={setPhone}
               placeholder="Введите номер телефона"
-              className="mt-6 w-full border-b py-2 text-[16px] outline-none placeholder:text-black/40 sm:text-[18px] md:mt-8 md:py-[10px] md:text-[20px]"
+              inputMode="tel"
+              normalize={(v) => v.replace(/[^\d+()\-\s]/g, '')}
+              validate={(v) => (phoneRe.test(v) ? null : 'Неверный телефон')}
+              validateOnChange
               required
+              error={errors.phone}
+              className="mt-6"
+              showErrorNow={triedStep1}
             />
-            <input
-              type="email"
+
+            <CheckoutInput
+              name="email"
+              value={email}
+              onChange={setEmail}
               placeholder="Введите электронную почту"
-              className="mt-6 w-full border-b py-2 text-[16px] outline-none placeholder:text-black/40 sm:text-[18px] md:mt-8 md:py-[10px] md:text-[20px]"
+              type="email"
+              inputMode="email"
+              validate={(v) =>
+                !v || emailRe.test(v) ? null : 'Неверная почта'
+              }
+              error={errors.email}
+              className="mt-6"
+              showErrorNow={triedStep1}
             />
 
             <Button
               fullWidth
-              onClick={() => setStep(2)}
+              onClick={() => {
+                setTriedStep1(true)
+                if (validateStep1()) {
+                  setStep(2)
+                } else {
+                  setStep(1)
+                }
+              }}
               className="mt-12 mb-4 sm:mt-14 md:mt-20"
               theme="dark"
             >
@@ -110,15 +463,13 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
             <h2 className="text-center font-lighthaus text-[22px] leading-[1.1] sm:text-[26px] md:text-[30px]">
               Выберите способ доставки
             </h2>
-            <p className="mt-2 text-center text-[14px] leading-[1.05] text-black/60 sm:text-[16px] md:text-[18px]">
-              2/3
-            </p>
+            <p className="mt-2 text-center text-[14px] text-black/60">2/3</p>
 
             <p className="mt-7 text-[16px] font-medium sm:text-[18px] md:text-[20px]">
               Выберите способ доставки
             </p>
 
-            <div className="mt-4 space-y-3 text-[16px] leading-[1.05] sm:text-[18px] md:text-[20px]">
+            <div className="mt-4 space-y-3 text-[16px] sm:text-[18px] md:text-[20px]">
               {options.map((o) => (
                 <label key={o.id} className="flex items-center gap-2">
                   <input
@@ -134,53 +485,92 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               ))}
             </div>
 
-            {/* Поля адреса / ПВЗ */}
             {deliveryMethod === 'courier' && (
               <div className="mt-7 grid grid-cols-1 gap-5 text-[16px] sm:text-[18px] md:grid-cols-2">
-                <input
+                <CheckoutInput
+                  name="city"
                   placeholder="Город"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40 md:col-span-2"
+                  value={city}
+                  onChange={setCity}
+                  required
+                  error={errors.city}
+                  className="md:col-span-2"
+                  showErrorNow={triedStep2}
                 />
-                <input
+                <CheckoutInput
+                  name="street"
                   placeholder="Улица"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40 md:col-span-2"
+                  value={street}
+                  onChange={setStreet}
+                  required
+                  error={errors.street}
+                  className="md:col-span-2"
+                  showErrorNow={triedStep2}
                 />
-                <input
+                <CheckoutInput
+                  name="house"
                   placeholder="Дом"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40"
+                  value={house}
+                  onChange={setHouse}
+                  required
+                  error={errors.house}
+                  showErrorNow={triedStep2}
                 />
-                <input
+                <CheckoutInput
+                  name="apartment"
                   placeholder="Квартира"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40"
+                  value={apartment}
+                  onChange={setApartment}
                 />
               </div>
             )}
 
             {deliveryMethod === 'post' && (
               <div className="mt-7 grid grid-cols-2 gap-2 text-[16px] sm:text-[18px] lg:gap-5">
-                <input
+                <CheckoutInput
+                  name="city"
                   placeholder="Город"
-                  className="col-span-2 w-full border-b py-2 outline-none placeholder:text-black/40"
+                  value={city}
+                  onChange={setCity}
+                  required
+                  error={errors.city}
+                  className="col-span-2"
+                  showErrorNow={triedStep2}
                 />
-                <input
+                <CheckoutInput
+                  name="street"
                   placeholder="Улица"
-                  className="col-span-2 w-full border-b py-2 outline-none placeholder:text-black/40"
+                  value={street}
+                  onChange={setStreet}
+                  required
+                  error={errors.street}
+                  className="col-span-2"
+                  showErrorNow={triedStep2}
                 />
-                <input
+                <CheckoutInput
+                  name="house"
                   placeholder="Дом"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40"
+                  value={house}
+                  onChange={setHouse}
+                  required
+                  error={errors.house}
+                  showErrorNow={triedStep2}
                 />
-                <input
+                <CheckoutInput
+                  name="apartment"
                   placeholder="Квартира"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40"
+                  value={apartment}
+                  onChange={setApartment}
                 />
-                <input
+                <CheckoutInput
+                  name="postal"
                   placeholder="Почтовый индекс"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40"
-                />
-                <input
-                  placeholder="ФИО получателя"
-                  className="w-full border-b py-2 outline-none placeholder:text-black/40 md:col-span-2"
+                  value={postalCode}
+                  onChange={setPostalCode}
+                  required
+                  error={errors.postalCode}
+                  className="md:col-span-2"
+                  showErrorNow={triedStep2}
                 />
               </div>
             )}
@@ -190,7 +580,11 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                 <Button type="button" onClick={openBoxberryMap} fullWidth>
                   Выбрать пункт выдачи
                 </Button>
-
+                {errors.pickup && (
+                  <p className="min-h-[20px] text-sm text-red-600">
+                    {errors.pickup}
+                  </p>
+                )}
                 {boxberryPoint && (
                   <div className="rounded-xl border p-4 text-[14px] sm:text-[16px]">
                     <div className="font-medium">
@@ -223,46 +617,19 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               </div>
             )}
 
-            {deliveryMethod === 'cdek' && (
-              <div className="mt-7 space-y-5 text-[16px] sm:text-[18px]">
-                <Button type="button" onClick={openCdekMap} fullWidth>
-                  Выбрать пункт выдачи
-                </Button>
-
-                {cdekPoint && (
-                  <div className="rounded-xl border p-4 text-[14px] sm:text-[16px]">
-                    <div className="font-medium">
-                      {cdekPoint.name || 'ПВЗ СДЭК'}
-                    </div>
-                    <div className="mt-1 text-black/70">
-                      {cdekPoint.address}
-                    </div>
-                    <div className="mt-1 text-[12px] text-black/50">
-                      ID: {cdekPoint.id}
-                    </div>
-                    <div className="mt-3 flex gap-3">
-                      <button
-                        type="button"
-                        onClick={openCdekMap}
-                        className="rounded-full border px-3 py-1 text-[14px] hover:bg-black/10"
-                      >
-                        Изменить
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCdekPoint(null)}
-                        className="rounded-full border px-3 py-1 text-[14px] hover:bg-black/10"
-                      >
-                        Сбросить
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             <div className="mt-7 flex flex-col justify-between gap-3 sm:gap-4">
-              <Button fullWidth onClick={() => setStep(3)} theme="dark">
+              <Button
+                fullWidth
+                onClick={() => {
+                  setTriedStep2(true)
+                  if (validateStep2()) {
+                    setStep(3)
+                  } else {
+                    setStep(2)
+                  }
+                }}
+                theme="dark"
+              >
                 Далее
               </Button>
               <Button onClick={() => setStep(1)} variant="ghost">
@@ -277,70 +644,83 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
             <h2 className="text-center font-lighthaus text-[22px] leading-[1.1] sm:text-[26px] md:text-[30px]">
               Выберите способ оплаты
             </h2>
-            <p className="mt-2 text-center text-[14px] leading-[1.05] text-black/60 sm:text-[16px] md:text-[18px]">
-              3/3
-            </p>
+            <p className="mt-2 text-center text-[14px] text-black/60">3/3</p>
 
             <div className="mt-6 leading-none">
-              <div className="space-y-4 sm:space-y-5">
-                <div className="flex items-center justify-between">
-                  <p className="text-[18px] sm:text-[20px] md:text-[24px]">
-                    Пальто Velato
-                  </p>
-                  <span className="flex items-center gap-3 text-[14px] sm:text-[16px] md:gap-5">
-                    1шт
+              {cartItems.length === 0 ? (
+                <p className="text-center text-black/60">Корзина пуста</p>
+              ) : (
+                <>
+                  <div className="space-y-4 sm:space-y-5">
+                    {cartItems.map((item) => (
+                      <div
+                        key={`${item.id}-${item.size ?? 'no-size'}`}
+                        className="flex items-center justify-between"
+                      >
+                        <p className="text-[18px] sm:text-[20px] md:text-[24px]">
+                          {item.name}
+                        </p>
+                        <span className="flex items-center gap-3 text-[14px] sm:text-[16px] md:gap-5">
+                          {item.quantity}шт
+                          <span className="text-[18px] font-medium sm:text-[20px] md:text-[24px]">
+                            {(
+                              Number(item.price) * item.quantity
+                            ).toLocaleString('ru-RU')}{' '}
+                            ₽
+                          </span>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 flex items-center justify-between">
+                    <p className="text-[18px] font-semibold sm:text-[20px] md:text-[24px]">
+                      Итого
+                    </p>
                     <span className="text-[18px] font-medium sm:text-[20px] md:text-[24px]">
-                      16 499 ₽
+                      {cartTotal.toLocaleString('ru-RU')} ₽
                     </span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-[18px] sm:text-[20px] md:text-[24px]">
-                    Пальто Velato
-                  </p>
-                  <span className="flex items-center gap-3 text-[14px] sm:text-[16px] md:gap-5">
-                    1шт
-                    <span className="text-[18px] font-medium sm:text-[20px] md:text-[24px]">
-                      16 499 ₽
-                    </span>
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-6 flex items-center justify-between">
-                <p className="text-[18px] font-semibold sm:text-[20px] md:text-[24px]">
-                  Итого
-                </p>
-                <span className="text-[18px] font-medium sm:text-[20px] md:text-[24px]">
-                  16 499 ₽
-                </span>
-              </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            <input
-              type="text"
-              placeholder="Введите промокод"
-              className="mt-6 w-full border-b py-2 text-[16px] leading-[1.05] outline-none placeholder:text-black/40 sm:text-[18px]"
-            />
-
-            <p className="mt-6 text-[16px] leading-[1.05] font-medium sm:text-[18px] md:text-[20px]">
+            <p className="mt-6 text-[16px] font-medium sm:text-[18px] md:text-[20px]">
               Выберите способ оплаты
             </p>
-
-            <div className="mt-4 space-y-3 text-[16px] leading-[1.05] sm:text-[18px] md:text-[20px]">
+            <div className="mt-4 space-y-3 text-[16px] sm:text-[18px] md:text-[20px]">
               <label className="flex items-center gap-2">
-                <input type="radio" name="payment" className="accent-black" />
+                <input
+                  type="radio"
+                  name="payment"
+                  className="accent-black"
+                  checked={paymentType === 'cash'}
+                  onChange={() => setPaymentType('cash')}
+                />
                 Наличными при получении
               </label>
               <label className="flex items-center gap-2">
-                <input type="radio" name="payment" className="accent-black" />
+                <input
+                  type="radio"
+                  name="payment"
+                  className="accent-black"
+                  checked={paymentType === 'qr'}
+                  onChange={() => setPaymentType('qr')}
+                />
                 QR-кодом при получении
               </label>
+              {errors.paymentType && (
+                <p className="text-sm text-red-600">{errors.paymentType}</p>
+              )}
             </div>
 
             <div className="mt-7 flex flex-col justify-between gap-3 sm:gap-4">
-              <Button fullWidth theme="dark">
-                Оформить заказ
+              <Button
+                fullWidth
+                theme="dark"
+                disabled={cartItems.length === 0 || submitting}
+                onClick={handleSubmit}
+              >
+                {submitting ? 'Оформляем…' : 'Оформить заказ'}
               </Button>
               <Button onClick={() => setStep(2)} variant="ghost">
                 Назад

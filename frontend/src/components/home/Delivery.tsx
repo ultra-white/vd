@@ -5,9 +5,9 @@ const Delivery = () => {
   return (
     <section
       id="доставка"
-      className="mx-auto max-w-[1740px] px-[10px] pb-100 sm:px-[25px] md:px-[50px] 2xl:px-[20px] 3xl:px-[10px]"
+      className="mx-auto max-w-[1740px] px-[10px] pb-[50px] sm:px-[25px] md:px-[50px] 2xl:px-[20px] 3xl:px-[10px]"
     >
-      <div className="flex justify-between gap-[5px] pt-[35px] leading-none not-md:flex-col not-md:text-center md:pt-[50px] lg:pt-[150px]">
+      <div className="flex justify-between gap-[5px] pt-[35px] leading-none not-md:flex-col not-md:text-center md:pt-[35px] lg:pt-[150px]">
         <h2 className="text-[10px] sm:text-[18px] lg:text-[30px] xl:pt-[11px]">
           Доставки, примерки, оплаты
         </h2>

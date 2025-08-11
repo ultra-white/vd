@@ -10,11 +10,9 @@ const Footer = () => {
             <h4 className="font-lighthaus text-[35px] leading-none xl:text-[68px]">
               Vento D’oro
             </h4>
-            <div className="mt-[10px] flex flex-col gap-[10px] text-[12px] text-white/70 xl:mt-[20px] xl:gap-[20px] xl:text-[18px]">
+            <div className="mt-[10px] flex flex-col gap-[10px] text-[12px] text-white/70 not-md:items-center xl:mt-[20px] xl:gap-[20px] xl:text-[18px]">
               <Link href={'/ip'}>ИП Поротников Алексей Александрович</Link>
-              <Link href={'/privacy_policy'} className="underline">
-                Политика конфиденциальности
-              </Link>
+              <Link href={'/privacy_policy'}>Политика конфиденциальности</Link>
             </div>
           </div>
           <div className="flex flex-col items-center sm:items-end">
