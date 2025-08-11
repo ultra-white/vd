@@ -407,6 +407,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               placeholder="Введите ФИО"
               required
               error={errors.fullName}
+              className="mt-[25px]"
               showErrorNow={triedStep1}
             />
 
@@ -421,7 +422,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               validateOnChange
               required
               error={errors.phone}
-              className="mt-6"
               showErrorNow={triedStep1}
             />
 
@@ -436,7 +436,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                 !v || emailRe.test(v) ? null : 'Неверная почта'
               }
               error={errors.email}
-              className="mt-6"
               showErrorNow={triedStep1}
             />
 
@@ -450,7 +449,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                   setStep(1)
                 }
               }}
-              className="mt-12 mb-4 sm:mt-14 md:mt-20"
+              className="mt-[10px] sm:mt-[15px] md:mt-[30px]"
               theme="dark"
             >
               Далее
@@ -486,7 +485,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
             </div>
 
             {deliveryMethod === 'courier' && (
-              <div className="mt-7 grid grid-cols-1 gap-5 text-[16px] sm:text-[18px] md:grid-cols-2">
+              <div className="mt-7 grid grid-cols-1 text-[16px] sm:text-[18px] md:grid-cols-2 md:gap-5">
                 <CheckoutInput
                   name="city"
                   placeholder="Город"

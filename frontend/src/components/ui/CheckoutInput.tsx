@@ -14,8 +14,8 @@ type CheckoutInputProps = Omit<
   normalize?: (value: string) => string
   validate?: (value: string) => string | null
   validateOnChange?: boolean
-  showErrorNow?: boolean // ← принудительно показать ошибку (при клике "Далее")
-  reserveErrorSpace?: boolean // чтобы верстка не прыгала
+  showErrorNow?: boolean
+  reserveErrorSpace?: boolean
 }
 
 export default function CheckoutInput({
@@ -73,7 +73,7 @@ export default function CheckoutInput({
         aria-describedby={shouldShow ? errorId : undefined}
         required={required}
         className={[
-          'w-full border-b py-2 text-[16px] outline-none placeholder:text-black/40 md:text-[20px]',
+          'w-full border-b py-1 text-[16px] outline-none placeholder:text-black/40 md:text-[20px]',
           className || '',
           shouldShow ? 'border-red-500' : '',
         ].join(' ')}
@@ -81,7 +81,7 @@ export default function CheckoutInput({
       />
       <div className={reserveErrorSpace ? 'min-h-[20px]' : ''}>
         {shouldShow && (
-          <p id={errorId} className="mt-1 text-sm text-red-600">
+          <p id={errorId} className="text-sm text-red-600">
             {message}
           </p>
         )}
