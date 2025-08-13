@@ -21,9 +21,20 @@ const Footer = () => {
                 <p className="font-lighthaus text-[14px] xl:text-[24px]">
                   Контакты
                 </p>
-                <div className="mt-[12px] flex flex-col gap-[8px] text-[10px] underline xl:mt-[25px] xl:gap-[15px] xl:text-[24px]">
-                  <Link href={'https://t.me/VENTO_DORO'} target="_blank">
-                    Telegram support
+                <div className="mt-[12px] flex-col gap-[8px] text-[10px] underline xl:mt-[25px] xl:gap-[15px] xl:text-[24px]">
+                  <Link
+                    href={'https://t.me/VENTO_DORO'}
+                    target="_blank"
+                    className="flex items-center gap-[5px]"
+                  >
+                    <span>Telegram</span>
+                    <Image
+                      src={'images/telegram-light.svg'}
+                      height={24}
+                      width={24}
+                      alt="tg"
+                      className="w-[8px] md:w-[10px] lg:w-[12px] xl:w-[20px]"
+                    />
                   </Link>
                   <Link href={'email:ventodoro@yandex.ru'} target="_blank">
                     ventodoro@yandex.ru

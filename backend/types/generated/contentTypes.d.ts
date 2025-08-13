@@ -376,7 +376,7 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
 export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
   collectionName: 'order_items';
   info: {
-    displayName: 'OrderItem';
+    displayName: '\u041F\u043E\u0437\u0438\u0446\u0438\u0438 \u0437\u0430\u043A\u0430\u0437\u0430';
     pluralName: 'order-items';
     singularName: 'order-item';
   };
@@ -407,7 +407,7 @@ export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
 export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
   collectionName: 'orders';
   info: {
-    displayName: 'Order';
+    displayName: '\u0417\u0430\u043A\u0430\u0437\u044B';
     pluralName: 'orders';
     singularName: 'order';
   };

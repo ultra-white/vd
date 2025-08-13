@@ -40,7 +40,7 @@ export default function Gallery() {
               alt={`Изображение ${index + 1}`}
               width={960}
               height={1200}
-              className="h-[500px] w-full object-cover transition md:h-screen"
+              className="h-[500px] w-full object-contain transition md:h-screen"
             />
           </SwiperSlide>
         ))}
