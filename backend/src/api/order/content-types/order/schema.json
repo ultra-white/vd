@@ -34,6 +34,13 @@
         "qr"
       ]
     },
+    "delivery_method": {
+      "type": "enumeration",
+      "enum": [
+        "courier",
+        "post"
+      ]
+    },
     "order_items": {
       "type": "relation",
       "relation": "oneToMany",

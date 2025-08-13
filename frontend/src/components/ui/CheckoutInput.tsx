@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import { useId, useState } from 'react'
 
 type CheckoutInputProps = Omit<
@@ -57,7 +58,7 @@ export default function CheckoutInput({
   const shouldShow = hasError && (showErrorNow || touched || validateOnChange)
 
   return (
-    <div className="w-full">
+    <div className={clsx('w-full', className)}>
       {label && (
         <label htmlFor={inputId} className="mb-1 block text-sm text-black/70">
           {label} {required && <span className="text-red-600">*</span>}
@@ -74,7 +75,6 @@ export default function CheckoutInput({
         required={required}
         className={[
           'w-full border-b py-1 text-[16px] outline-none placeholder:text-black/40 md:text-[20px]',
-          className || '',
           shouldShow ? 'border-red-500' : '',
         ].join(' ')}
         {...rest}

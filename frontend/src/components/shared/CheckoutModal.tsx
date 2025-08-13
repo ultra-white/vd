@@ -9,8 +9,8 @@ interface CheckoutModalProps {
   onClose: () => void
 }
 
-type DeliveryMethod = 'courier' | 'boxberry' | 'post'
-type PickupPoint = { id: string; address: string; name?: string }
+type DeliveryMethod = 'courier' | 'post'
+
 type CartItem = {
   id: string | number // фронтовый id
   strapiId?: number // желательно хранить id из Strapi
@@ -23,13 +23,8 @@ type CartItem = {
 
 const options: { id: DeliveryMethod; label: string }[] = [
   { id: 'courier', label: 'Курьером по Москве' },
-  { id: 'boxberry', label: 'Boxberry' },
   { id: 'post', label: 'Почта России' },
 ]
-
-// Boxberry
-const BOXBERRY_SCRIPT_SRC = 'https://points.boxberry.ru/js/boxberry.js'
-const BOXBERRY_TOKEN = 'PASTE_YOUR_BOXBERRY_TOKEN'
 
 declare global {
   interface Window {
@@ -57,19 +52,6 @@ declare global {
   }
 }
 
-function loadScript(src: string, id: string) {
-  return new Promise<void>((resolve, reject) => {
-    if (document.getElementById(id)) return resolve()
-    const s = document.createElement('script')
-    s.src = src
-    s.async = true
-    s.id = id
-    s.onload = () => resolve()
-    s.onerror = () => reject(new Error(`Failed to load ${src}`))
-    document.body.appendChild(s)
-  })
-}
-
 export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   const [step, setStep] = useState(1)
 
@@ -90,7 +72,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   const [house, setHouse] = useState('')
   const [apartment, setApartment] = useState('')
   const [postalCode, setPostalCode] = useState('')
-  const [boxberryPoint, setBoxberryPoint] = useState<PickupPoint | null>(null)
 
   // шаг 3
   const [paymentType, setPaymentType] = useState<'cash' | 'qr' | ''>('')
@@ -145,7 +126,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
     }
   }, [])
 
-  // валидации
   function validateStep1() {
     const e: Record<string, string> = {}
     if (!fullName.trim()) e.fullName = 'Укажите ФИО'
@@ -175,8 +155,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
       if (!house.trim()) e.house = 'Дом обязателен'
       if (!postalCode.trim()) e.postalCode = 'Индекс обязателен'
     }
-    if (deliveryMethod === 'boxberry' && !boxberryPoint)
-      e.pickup = 'Выберите пункт Boxberry'
 
     setErrors((prev) => {
       const next = { ...prev }
@@ -188,30 +166,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
       return { ...next, ...e }
     })
     return Object.keys(e).length === 0
-  }
-
-  async function openBoxberryMap() {
-    await loadScript(BOXBERRY_SCRIPT_SRC, 'boxberry-widget')
-    if (!window.boxberry) return
-    window.boxberry.displaySettings?.({ top: 10 })
-    window.boxberry.open(
-      (res) => {
-        const id = res.id ?? res.code
-        const address = res.address ?? ''
-        const name = res.name ?? 'ПВЗ Boxberry'
-
-        if (id && address) setBoxberryPoint({ id: String(id), address, name })
-      },
-      BOXBERRY_TOKEN,
-      '',
-      '',
-      1000,
-      500,
-      0,
-      30,
-      20,
-      10,
-    )
   }
 
   async function handleSubmit() {
@@ -268,11 +222,18 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
     }
 
     setSubmitting(true)
+
     try {
       const addr =
         deliveryMethod === 'courier' || deliveryMethod === 'post'
-          ? `${city}, ${street}, дом ${house}${apartment ? `, кв. ${apartment}` : ''}${postalCode ? `, ${postalCode}` : ''}`
-          : boxberryPoint?.address || ''
+          ? [
+              `Город - ${city}`,
+              `${street}, дом ${house}${apartment ? `, кв. ${apartment}` : ''}`,
+              postalCode || '',
+            ]
+              .filter(Boolean)
+              .join('\n')
+          : ''
 
       // 1) создаём Order
       const orderRes = await fetch(
@@ -290,7 +251,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               email: email.trim() || null,
               address: addr,
               payment_type: paymentType, // 'cash' | 'qr'
-              // delivery_method: deliveryMethod, // если поле есть в модели — можно раскомментить
+              delivery_method: deliveryMethod, // 'courier' | 'post'
             },
           }),
         },
@@ -470,11 +431,14 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
             <div className="mt-4 space-y-3 text-[16px] sm:text-[18px] md:text-[20px]">
               {options.map((o) => (
-                <label key={o.id} className="flex items-center gap-2">
+                <label
+                  key={o.id}
+                  className="flex cursor-pointer items-center gap-2"
+                >
                   <input
                     type="radio"
                     name="delivery"
-                    className="accent-black"
+                    className="cursor-pointer accent-black"
                     checked={deliveryMethod === o.id}
                     onChange={() => setDeliveryMethod(o.id)}
                     required
@@ -485,46 +449,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
             </div>
 
             {deliveryMethod === 'courier' && (
-              <div className="mt-7 grid grid-cols-1 text-[16px] sm:text-[18px] md:grid-cols-2 md:gap-5">
-                <CheckoutInput
-                  name="city"
-                  placeholder="Город"
-                  value={city}
-                  onChange={setCity}
-                  required
-                  error={errors.city}
-                  className="md:col-span-2"
-                  showErrorNow={triedStep2}
-                />
-                <CheckoutInput
-                  name="street"
-                  placeholder="Улица"
-                  value={street}
-                  onChange={setStreet}
-                  required
-                  error={errors.street}
-                  className="md:col-span-2"
-                  showErrorNow={triedStep2}
-                />
-                <CheckoutInput
-                  name="house"
-                  placeholder="Дом"
-                  value={house}
-                  onChange={setHouse}
-                  required
-                  error={errors.house}
-                  showErrorNow={triedStep2}
-                />
-                <CheckoutInput
-                  name="apartment"
-                  placeholder="Квартира"
-                  value={apartment}
-                  onChange={setApartment}
-                />
-              </div>
-            )}
-
-            {deliveryMethod === 'post' && (
               <div className="mt-7 grid grid-cols-2 gap-2 text-[16px] sm:text-[18px] lg:gap-5">
                 <CheckoutInput
                   name="city"
@@ -561,6 +485,48 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                   value={apartment}
                   onChange={setApartment}
                 />
+              </div>
+            )}
+
+            {deliveryMethod === 'post' && (
+              <div className="mt-7 grid grid-cols-2 gap-2 text-[16px] sm:text-[18px] lg:gap-5">
+                <CheckoutInput
+                  name="city"
+                  placeholder="Город"
+                  value={city}
+                  onChange={setCity}
+                  required
+                  error={errors.city}
+                  showErrorNow={triedStep2}
+                  className="col-span-2"
+                />
+                <CheckoutInput
+                  name="street"
+                  placeholder="Улица"
+                  value={street}
+                  onChange={setStreet}
+                  required
+                  error={errors.street}
+                  showErrorNow={triedStep2}
+                  className="col-span-2"
+                />
+                <CheckoutInput
+                  name="house"
+                  placeholder="Дом"
+                  value={house}
+                  onChange={setHouse}
+                  required
+                  error={errors.house}
+                  showErrorNow={triedStep2}
+                  className="md:col-span-1"
+                />
+                <CheckoutInput
+                  name="apartment"
+                  placeholder="Квартира"
+                  value={apartment}
+                  onChange={setApartment}
+                  className="md:col-span-1"
+                />
                 <CheckoutInput
                   name="postal"
                   placeholder="Почтовый индекс"
@@ -568,51 +534,9 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                   onChange={setPostalCode}
                   required
                   error={errors.postalCode}
-                  className="md:col-span-2"
                   showErrorNow={triedStep2}
+                  className="col-span-2"
                 />
-              </div>
-            )}
-
-            {deliveryMethod === 'boxberry' && (
-              <div className="mt-7 space-y-5 text-[16px] sm:text-[18px]">
-                <Button type="button" onClick={openBoxberryMap} fullWidth>
-                  Выбрать пункт выдачи
-                </Button>
-                {errors.pickup && (
-                  <p className="min-h-[20px] text-sm text-red-600">
-                    {errors.pickup}
-                  </p>
-                )}
-                {boxberryPoint && (
-                  <div className="rounded-xl border p-4 text-[14px] sm:text-[16px]">
-                    <div className="font-medium">
-                      {boxberryPoint.name || 'ПВЗ Boxberry'}
-                    </div>
-                    <div className="mt-1 text-black/70">
-                      {boxberryPoint.address}
-                    </div>
-                    <div className="mt-1 text-[12px] text-black/50">
-                      ID: {boxberryPoint.id}
-                    </div>
-                    <div className="mt-3 flex gap-3">
-                      <button
-                        type="button"
-                        onClick={openBoxberryMap}
-                        className="rounded-full border px-3 py-1 text-[14px] hover:bg-black/10"
-                      >
-                        Изменить
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setBoxberryPoint(null)}
-                        className="rounded-full border px-3 py-1 text-[14px] hover:bg-black/10"
-                      >
-                        Сбросить
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 
@@ -687,21 +611,21 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               Выберите способ оплаты
             </p>
             <div className="mt-4 space-y-3 text-[16px] sm:text-[18px] md:text-[20px]">
-              <label className="flex items-center gap-2">
+              <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="radio"
                   name="payment"
-                  className="accent-black"
+                  className="cursor-pointer accent-black"
                   checked={paymentType === 'cash'}
                   onChange={() => setPaymentType('cash')}
                 />
                 Наличными при получении
               </label>
-              <label className="flex items-center gap-2">
+              <label className="flex cursor-pointer items-center gap-2">
                 <input
                   type="radio"
                   name="payment"
-                  className="accent-black"
+                  className="cursor-pointer accent-black"
                   checked={paymentType === 'qr'}
                   onChange={() => setPaymentType('qr')}
                 />
