@@ -16,42 +16,48 @@ interface Article {
 }
 
 export default function ArticlePage() {
-  const { id } = useParams()
+  const { slug } = useParams() as { slug: string }
   const [article, setArticle] = useState<Article | null>(null)
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchArticle = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/articles/${id}?populate=general_image`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/articles?filters[slug][$eq]=${slug}&populate=general_image`,
           {
             headers: {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
             },
           },
         )
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
         const json = await res.json()
-        const articleData = json.data
-        if (!articleData) return
+        const item = json?.data?.[0]
+        if (!item) return
 
-        const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${articleData.general_image.url || ''}`
+        const base = process.env.NEXT_PUBLIC_API_URL || ''
 
-        console.log(imageUrl)
-        console.log(articleData)
+        const urlPath: string =
+          item?.general_image?.url ?? ''
+
+        const imageUrl =
+          urlPath &&
+          (urlPath.startsWith('http') ? urlPath : `${base}${urlPath}`)
 
         setArticle({
-          general_image: imageUrl,
-          name: articleData.name,
-          slug: articleData.slug,
-          text: articleData.text,
+          general_image: imageUrl || '',
+          name: item.name ?? item.title ?? item.slug ?? 'Без названия',
+          slug: item.slug,
+          text: item.text ?? item.content ?? '',
         })
       } catch (err) {
         console.error('Ошибка при загрузке статьи:', err)
       }
     }
 
-    if (id) fetchProduct()
-  }, [id])
+    if (slug) fetchArticle()
+  }, [slug])
 
   return (
     <>

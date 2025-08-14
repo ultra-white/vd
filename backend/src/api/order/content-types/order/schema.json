@@ -44,6 +44,16 @@
         "Почта России"
       ]
     },
+    "order_status": {
+      "type": "enumeration",
+      "required": true,
+      "default": "Создан",
+      "enum": [
+        "Создан",
+        "Отправлено",
+        "Доставлен"
+      ]
+    },
     "items": {
       "type": "dynamiczone",
       "components": [

@@ -5,9 +5,9 @@ const Delivery = () => {
   return (
     <section
       id="доставка"
-      className="mx-auto max-w-[1740px] px-[10px] pb-[50px] sm:px-[25px] md:px-[50px] 2xl:px-[20px] 3xl:px-[10px]"
+      className="mx-auto max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] 2xl:px-[20px] 3xl:px-[10px]"
     >
-      <div className="flex justify-between gap-[5px] pt-[35px] leading-none not-md:flex-col not-md:text-center md:pt-[35px] lg:pt-[150px]">
+      <div className="flex justify-between gap-[5px] pt-[35px] leading-none not-md:flex-col not-md:text-center lg:pt-[150px]">
         <h2 className="text-[10px] sm:text-[18px] lg:text-[30px] xl:pt-[11px]">
           Доставки, примерки, оплаты
         </h2>
@@ -39,7 +39,7 @@ const Delivery = () => {
             россии
           </h3>
           <ul className="mt-2 space-y-0 text-[8px] not-sm:leading-[145%] sm:space-y-[3px] sm:text-[10px] lg:text-[10px] xl:text-[12px] 2xl:text-[16px] 3xl:space-y-[12px] 3xl:text-[18px]">
-            <li className="font-semibold">СДЭК/BoxBerry</li>
+            <li className="font-semibold">Яндекс Доставка</li>
             <li>Бесплатно в Москве и МО, 500 ₽ — в регионы</li>
             <li>1–3 дня, хранение в ПВЗ до 7 дн</li>
             <li className="font-semibold">Почта России</li>

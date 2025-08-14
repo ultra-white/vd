@@ -4,7 +4,7 @@
   "info": {
     "singularName": "article",
     "pluralName": "articles",
-    "displayName": "Article"
+    "displayName": "Статьи"
   },
   "options": {
     "draftAndPublish": true
@@ -14,6 +14,7 @@
     "general_image": {
       "type": "media",
       "multiple": false,
+      "required": true,
       "allowedTypes": [
         "images",
         "files",
@@ -21,11 +22,23 @@
         "audios"
       ]
     },
+    "title": {
+      "type": "string",
+      "required": true
+    },
     "slug": {
-      "type": "string"
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "description": {
+      "type": "text",
+      "maxLength": 200,
+      "required": false
     },
     "text": {
-      "type": "richtext"
+      "type": "richtext",
+      "required": true
     }
   }
 }

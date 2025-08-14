@@ -1,5 +1,6 @@
 import {
   About,
+  Blog,
   CareGuideBanner,
   CurrentCollection,
   Delivery,
@@ -27,6 +28,7 @@ export default function Home() {
         <OurProduction />
         <Founders />
         <Delivery />
+        <Blog />
       </main>
       <Footer />
     </>

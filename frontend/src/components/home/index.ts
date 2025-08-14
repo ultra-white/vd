@@ -1,4 +1,5 @@
 export { default as About } from './About'
+export { default as Blog } from './Blog'
 export { default as CareGuideBanner } from './CareGuideBanner'
 export { default as CurrentCollection } from './CurrentCollection'
 export { default as Delivery } from './Delivery'
