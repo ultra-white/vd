@@ -3,7 +3,7 @@ import { Footer, Header } from '@/components/shared'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
@@ -58,6 +58,42 @@ export default function ArticlePage() {
     if (slug) fetchArticle()
   }, [slug])
 
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || '' // В dev: http://localhost:3000
+  const pageUrl = `${origin}/blog/${slug}`
+
+  const title = article?.name ?? 'Статья'
+  const image = article?.general_image ?? ''
+
+  const tgShare = useMemo(
+    () =>
+      `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(title)}`,
+    [pageUrl, title],
+  )
+  const vkShare = useMemo(
+    () =>
+      `https://vk.com/share.php?url=${encodeURIComponent(pageUrl)}&title=${encodeURIComponent(title)}&image=${encodeURIComponent(image)}`,
+    [pageUrl, title, image],
+  )
+
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(pageUrl)
+      alert('Ссылка скопирована')
+    } catch {
+      alert('Не удалось скопировать ссылку')
+    }
+  }
+
+  const instaShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, url: pageUrl })
+      } catch {}
+    } else {
+      copyLink()
+    }
+  }
+
   return (
     <>
       <Header />
@@ -65,38 +101,59 @@ export default function ArticlePage() {
         <div className="mx-auto flex max-w-[1200px] justify-between">
           <p className="text-[30px]">Поделиться</p>
           <div className="flex gap-[15px]">
-            <button className="cursor-pointer">
+            <button
+              onClick={copyLink}
+              className="cursor-pointer"
+              aria-label="Скопировать ссылку"
+            >
               <Image
-                src={'/images/link-rounded-dark.svg'}
+                src="/images/link-rounded-dark.svg"
                 width={48}
                 height={48}
                 alt="copy link"
               />
             </button>
-            <button className="cursor-pointer">
+
+            <a
+              href={tgShare}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Поделиться в Telegram"
+            >
               <Image
-                src={'/images/telegram-rounded-dark.svg'}
+                src="/images/telegram-rounded-dark.svg"
                 width={48}
                 height={48}
                 alt="telegram link"
               />
-            </button>
-            <button className="cursor-pointer">
+            </a>
+
+            <button
+              onClick={instaShare}
+              className="cursor-pointer"
+              aria-label="Поделиться (Instagram/системный share)"
+            >
               <Image
-                src={'/images/insta-rounded-dark.svg'}
+                src="/images/insta-rounded-dark.svg"
                 width={48}
                 height={48}
                 alt="instagram link"
               />
             </button>
-            <button className="cursor-pointer">
+
+            <a
+              href={vkShare}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Поделиться ВКонтакте"
+            >
               <Image
-                src={'/images/vk-rounded-dark.svg'}
+                src="/images/vk-rounded-dark.svg"
                 width={48}
                 height={48}
                 alt="vk link"
               />
-            </button>
+            </a>
           </div>
         </div>
 
@@ -117,7 +174,7 @@ export default function ArticlePage() {
               Главная
             </Link>{' '}
             /{' '}
-            <Link href="/catalog" className="hover:underline">
+            <Link href="/blog" className="hover:underline">
               Блог
             </Link>{' '}
             <span className="text-black">/ {article?.name}</span>
