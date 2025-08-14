@@ -3,7 +3,7 @@ import { Footer, Header } from '@/components/shared'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
@@ -62,18 +62,6 @@ export default function ArticlePage() {
   const pageUrl = `${origin}/blog/${slug}`
 
   const title = article?.name ?? 'Статья'
-  const image = article?.general_image ?? ''
-
-  const tgShare = useMemo(
-    () =>
-      `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&text=${encodeURIComponent(title)}`,
-    [pageUrl, title],
-  )
-  const vkShare = useMemo(
-    () =>
-      `https://vk.com/share.php?url=${encodeURIComponent(pageUrl)}&title=${encodeURIComponent(title)}&image=${encodeURIComponent(image)}`,
-    [pageUrl, title, image],
-  )
 
   const copyLink = async () => {
     try {
@@ -102,58 +90,17 @@ export default function ArticlePage() {
           <p className="text-[30px]">Поделиться</p>
           <div className="flex gap-[15px]">
             <button
-              onClick={copyLink}
-              className="cursor-pointer"
-              aria-label="Скопировать ссылку"
-            >
-              <Image
-                src="/images/link-rounded-dark.svg"
-                width={48}
-                height={48}
-                alt="copy link"
-              />
-            </button>
-
-            <a
-              href={tgShare}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Поделиться в Telegram"
-            >
-              <Image
-                src="/images/telegram-rounded-dark.svg"
-                width={48}
-                height={48}
-                alt="telegram link"
-              />
-            </a>
-
-            <button
               onClick={instaShare}
               className="cursor-pointer"
               aria-label="Поделиться (Instagram/системный share)"
             >
               <Image
-                src="/images/insta-rounded-dark.svg"
+                src="/images/link-rounded-dark.svg"
                 width={48}
                 height={48}
                 alt="instagram link"
               />
             </button>
-
-            <a
-              href={vkShare}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Поделиться ВКонтакте"
-            >
-              <Image
-                src="/images/vk-rounded-dark.svg"
-                width={48}
-                height={48}
-                alt="vk link"
-              />
-            </a>
           </div>
         </div>
 
