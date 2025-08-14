@@ -29,23 +29,27 @@
     },
     "payment_type": {
       "type": "enumeration",
+      "required": true,
       "enum": [
-        "cash",
-        "qr"
+        "Наличные",
+        "qr-код"
       ]
     },
     "delivery_method": {
       "type": "enumeration",
+      "required": true,
       "enum": [
-        "courier",
-        "post"
+        "Курьер",
+        "Яндекс доставка",
+        "Почта России"
       ]
     },
-    "order_items": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::order-item.order-item",
-      "mappedBy": "order"
+    "items": {
+      "type": "dynamiczone",
+      "components": [
+        "order.product"
+      ],
+      "required": true
     }
   }
 }

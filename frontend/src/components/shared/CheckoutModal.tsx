@@ -9,47 +9,21 @@ interface CheckoutModalProps {
   onClose: () => void
 }
 
-type DeliveryMethod = 'courier' | 'post'
+type DeliveryMethod = 'Курьер' | 'Почта России' | 'Яндекс доставка'
+
+const options: { id: DeliveryMethod; label: string }[] = [
+  { id: 'Курьер', label: 'Курьером по Москве' },
+  { id: 'Яндекс доставка', label: 'Яндекс доставка' },
+  { id: 'Почта России', label: 'Почта России' },
+]
 
 type CartItem = {
   id: string | number // фронтовый id
-  strapiId?: number // желательно хранить id из Strapi
   name: string
   price: number | string
   quantity: number
   size?: string
   image?: string
-}
-
-const options: { id: DeliveryMethod; label: string }[] = [
-  { id: 'courier', label: 'Курьером по Москве' },
-  { id: 'post', label: 'Почта России' },
-]
-
-declare global {
-  interface Window {
-    boxberry?: {
-      open: (
-        cb: (data: {
-          id?: string | number
-          code?: string | number
-          name?: string
-          address?: string
-          [k: string]: unknown
-        }) => void,
-        token?: string,
-        custom_city?: string,
-        target_start?: string,
-        ordersum?: string | number,
-        weight?: string | number,
-        paysum?: string | number,
-        height?: string | number,
-        width?: string | number,
-        depth?: string | number,
-      ) => void
-      displaySettings?: (opts: { top?: number }) => void
-    }
-  }
 }
 
 export default function CheckoutModal({ onClose }: CheckoutModalProps) {
@@ -65,8 +39,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   const [email, setEmail] = useState('')
 
   // шаг 2
-  const [deliveryMethod, setDeliveryMethod] =
-    useState<DeliveryMethod>('courier')
+  const [deliveryMethod, setDeliveryMethod] = useState<DeliveryMethod>('Курьер')
   const [city, setCity] = useState('')
   const [street, setStreet] = useState('')
   const [house, setHouse] = useState('')
@@ -74,7 +47,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   const [postalCode, setPostalCode] = useState('')
 
   // шаг 3
-  const [paymentType, setPaymentType] = useState<'cash' | 'qr' | ''>('')
+  const [paymentType, setPaymentType] = useState<'Наличные' | 'qr-код' | ''>('')
 
   // ui
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -144,16 +117,21 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
   function validateStep2() {
     const e: Record<string, string> = {}
-    if (deliveryMethod === 'courier') {
+    if (deliveryMethod === 'Курьер') {
       if (!city.trim()) e.city = 'Город обязателен'
       if (!street.trim()) e.street = 'Улица обязательна'
       if (!house.trim()) e.house = 'Дом обязателен'
     }
-    if (deliveryMethod === 'post') {
+    if (deliveryMethod === 'Почта России') {
       if (!city.trim()) e.city = 'Город обязателен'
       if (!street.trim()) e.street = 'Улица обязательна'
       if (!house.trim()) e.house = 'Дом обязателен'
       if (!postalCode.trim()) e.postalCode = 'Индекс обязателен'
+    }
+    if (deliveryMethod === 'Яндекс доставка') {
+      if (!city.trim()) e.city = 'Город обязателен'
+      if (!street.trim()) e.street = 'Улица обязательна'
+      if (!house.trim()) e.house = 'Дом обязателен'
     }
 
     setErrors((prev) => {
@@ -191,7 +169,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
     }
     if (cartItems.length === 0) return
 
-    // готовим позиции: ВАЖНО — product = documentId (СТРОКА)
     const itemsForPayload: {
       product: string
       quantity: number
@@ -225,7 +202,9 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
     try {
       const addr =
-        deliveryMethod === 'courier' || deliveryMethod === 'post'
+        deliveryMethod === 'Курьер' ||
+        deliveryMethod === 'Почта России' ||
+        deliveryMethod === 'Яндекс доставка'
           ? [
               `Город - ${city}`,
               `${street}, дом ${house}${apartment ? `, кв. ${apartment}` : ''}`,
@@ -251,7 +230,13 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               email: email.trim() || null,
               address: addr,
               payment_type: paymentType, // 'cash' | 'qr'
-              delivery_method: deliveryMethod, // 'courier' | 'post'
+              delivery_method: deliveryMethod, // 'курьер' | 'post'
+              items: itemsForPayload.map((item) => ({
+                __component: 'order.product',
+                product: item.product,
+                quantity: item.quantity,
+                size: item.size ? item.size.toLowerCase() : null,
+              })),
             },
           }),
         },
@@ -274,36 +259,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
         alert('Ошибка оформления заказа (нет documentId).')
         setSubmitting(false)
         return
-      }
-
-      // 2) создаём OrderItem для каждой позиции
-      for (const item of itemsForPayload) {
-        const itemRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/order-items`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
-            },
-            body: JSON.stringify({
-              data: {
-                product: item.product,
-                quantity: item.quantity,
-                size: item.size ? item.size.toLowerCase() : null,
-                order: orderDocumentId,
-              },
-            }),
-          },
-        )
-
-        if (!itemRes.ok) {
-          const raw = await itemRes.text()
-          console.error('Create order-item failed:', itemRes.status, raw)
-          alert('Ошибка оформления заказа (позиции). Попробуйте ещё раз.')
-          setSubmitting(false)
-          return
-        }
       }
 
       // успех
@@ -448,7 +403,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               ))}
             </div>
 
-            {deliveryMethod === 'courier' && (
+            {deliveryMethod === 'Курьер' && (
               <div className="mt-7 grid grid-cols-2 gap-2 text-[16px] sm:text-[18px] lg:gap-5">
                 <CheckoutInput
                   name="city"
@@ -472,7 +427,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                 />
                 <CheckoutInput
                   name="house"
-                  placeholder="Дом"
+                  placeholder="Дом / Корпус"
                   value={house}
                   onChange={setHouse}
                   required
@@ -488,7 +443,47 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
               </div>
             )}
 
-            {deliveryMethod === 'post' && (
+            {deliveryMethod === 'Яндекс доставка' && (
+              <div className="mt-7 grid grid-cols-2 gap-2 text-[16px] sm:text-[18px] lg:gap-5">
+                <CheckoutInput
+                  name="city"
+                  placeholder="Город"
+                  value={city}
+                  onChange={setCity}
+                  required
+                  error={errors.city}
+                  className="col-span-2"
+                  showErrorNow={triedStep2}
+                />
+                <CheckoutInput
+                  name="street"
+                  placeholder="Улица"
+                  value={street}
+                  onChange={setStreet}
+                  required
+                  error={errors.street}
+                  className="col-span-2"
+                  showErrorNow={triedStep2}
+                />
+                <CheckoutInput
+                  name="house"
+                  placeholder="Дом / Корпус"
+                  value={house}
+                  onChange={setHouse}
+                  required
+                  error={errors.house}
+                  showErrorNow={triedStep2}
+                />
+                <CheckoutInput
+                  name="apartment"
+                  placeholder="Квартира"
+                  value={apartment}
+                  onChange={setApartment}
+                />
+              </div>
+            )}
+
+            {deliveryMethod === 'Почта России' && (
               <div className="mt-7 grid grid-cols-2 gap-2 text-[16px] sm:text-[18px] lg:gap-5">
                 <CheckoutInput
                   name="city"
@@ -512,7 +507,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                 />
                 <CheckoutInput
                   name="house"
-                  placeholder="Дом"
+                  placeholder="Дом / Корпус"
                   value={house}
                   onChange={setHouse}
                   required
@@ -616,8 +611,8 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                   type="radio"
                   name="payment"
                   className="cursor-pointer accent-black"
-                  checked={paymentType === 'cash'}
-                  onChange={() => setPaymentType('cash')}
+                  checked={paymentType === 'Наличные'}
+                  onChange={() => setPaymentType('Наличные')}
                 />
                 Наличными при получении
               </label>
@@ -626,8 +621,8 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                   type="radio"
                   name="payment"
                   className="cursor-pointer accent-black"
-                  checked={paymentType === 'qr'}
-                  onChange={() => setPaymentType('qr')}
+                  checked={paymentType === 'qr-код'}
+                  onChange={() => setPaymentType('qr-код')}
                 />
                 QR-кодом при получении
               </label>

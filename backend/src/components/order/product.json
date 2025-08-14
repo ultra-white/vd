@@ -1,0 +1,29 @@
+{
+  "collectionName": "components_order_products",
+  "info": {
+    "displayName": "Товар",
+    "icon": "archive"
+  },
+  "options": {},
+  "attributes": {
+    "quantity": {
+      "type": "integer",
+      "required": true
+    },
+    "size": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "s",
+        "m",
+        "l"
+      ]
+    },
+    "product": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::product.product"
+    }
+  },
+  "config": {}
+}

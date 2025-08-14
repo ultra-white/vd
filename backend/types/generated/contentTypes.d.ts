@@ -373,12 +373,12 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
-  collectionName: 'order_items';
+export interface ApiArticleArticle extends Struct.CollectionTypeSchema {
+  collectionName: 'articles';
   info: {
-    displayName: '\u041F\u043E\u0437\u0438\u0446\u0438\u0438 \u0437\u0430\u043A\u0430\u0437\u0430';
-    pluralName: 'order-items';
-    singularName: 'order-item';
+    displayName: 'Article';
+    pluralName: 'articles';
+    singularName: 'article';
   };
   options: {
     draftAndPublish: true;
@@ -387,17 +387,18 @@ export interface ApiOrderItemOrderItem extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    general_image: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
-      'api::order-item.order-item'
+      'api::article.article'
     > &
       Schema.Attribute.Private;
-    order: Schema.Attribute.Relation<'manyToOne', 'api::order.order'>;
-    product: Schema.Attribute.Relation<'oneToOne', 'api::product.product'>;
     publishedAt: Schema.Attribute.DateTime;
-    quantity: Schema.Attribute.Integer;
-    size: Schema.Attribute.Enumeration<['xs', 's', 'm', 'l', 'xl']>;
+    slug: Schema.Attribute.String;
+    text: Schema.Attribute.RichText;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -419,17 +420,28 @@ export interface ApiOrderOrder extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    delivery_method: Schema.Attribute.Enumeration<['courier', 'post']>;
+    delivery_method: Schema.Attribute.Enumeration<
+      [
+        '\u041A\u0443\u0440\u044C\u0435\u0440',
+        '\u042F\u043D\u0434\u0435\u043A\u0441 \u0434\u043E\u0441\u0442\u0430\u0432\u043A\u0430',
+        '\u041F\u043E\u0447\u0442\u0430 \u0420\u043E\u0441\u0441\u0438\u0438',
+      ]
+    > &
+      Schema.Attribute.Required;
     email: Schema.Attribute.String;
     full_name: Schema.Attribute.String & Schema.Attribute.Required;
+    items: Schema.Attribute.DynamicZone<['order.product']> &
+      Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::order.order'> &
       Schema.Attribute.Private;
-    order_items: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::order-item.order-item'
-    >;
-    payment_type: Schema.Attribute.Enumeration<['cash', 'qr']>;
+    payment_type: Schema.Attribute.Enumeration<
+      [
+        '\u041D\u0430\u043B\u0438\u0447\u043D\u044B\u0435',
+        'qr-\u043A\u043E\u0434',
+      ]
+    > &
+      Schema.Attribute.Required;
     phone: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -1019,7 +1031,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
-      'api::order-item.order-item': ApiOrderItemOrderItem;
+      'api::article.article': ApiArticleArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
       'plugin::content-releases.release': PluginContentReleasesRelease;

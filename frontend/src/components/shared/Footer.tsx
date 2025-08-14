@@ -29,7 +29,7 @@ const Footer = () => {
                   >
                     <span>Telegram</span>
                     <Image
-                      src={'images/telegram-light.svg'}
+                      src={'/images/telegram-light.svg'}
                       height={24}
                       width={24}
                       alt="tg"
