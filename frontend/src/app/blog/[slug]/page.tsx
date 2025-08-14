@@ -87,8 +87,8 @@ export default function ArticlePage() {
       <Header />
       <main className="mx-auto my-[25px] mt-[100px] h-fit min-h-screen max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] 2xl:px-5 3xl:px-[10px]">
         <div className="mx-auto flex max-w-[1200px] justify-between">
-          <p className="text-[30px]">Поделиться</p>
-          <div className="flex gap-[15px]">
+          <p className="text-[20px] lg:text-[30px]">Поделиться</p>
+          <div className="flex items-center gap-[15px]">
             <button
               onClick={instaShare}
               className="cursor-pointer"
@@ -110,7 +110,7 @@ export default function ArticlePage() {
             width={1920}
             height={1080}
             alt="Изображение статьи"
-            className="mx-auto mt-[25px] w-full max-w-[1440px]"
+            className="mx-auto mt-[25px] max-h-[800px] w-full max-w-[1440px]"
             unoptimized
           />
         )}
@@ -126,7 +126,7 @@ export default function ArticlePage() {
             </Link>{' '}
             <span className="text-black">/ {article?.name}</span>
           </nav>
-          <h1 className="mt-[25px] text-center font-lighthaus text-[65px] leading-none">
+          <h1 className="mt-[25px] text-center font-lighthaus text-[32px] leading-none lg:text-[48px] xl:text-[65px]">
             {article?.name}
           </h1>
           <div className="flex w-full flex-col">
@@ -135,7 +135,10 @@ export default function ArticlePage() {
               rehypePlugins={[rehypeRaw]}
               components={{
                 p: ({ children, ...props }) => (
-                  <p className="mt-[15px] text-[18px]" {...props}>
+                  <p
+                    className="mt-[15px] text-[16px] lg:text-[18px]"
+                    {...props}
+                  >
                     {children}
                   </p>
                 ),
@@ -213,7 +216,7 @@ export default function ArticlePage() {
                         width={1920}
                         height={1080}
                         unoptimized
-                        className="mx-auto max-h-[600px] w-full max-w-[1920px] rounded-xl object-cover px-10"
+                        className="mx-auto max-h-[600px] w-full max-w-[1920px] object-cover"
                         style={{ height: 'auto' }}
                       />
                     </span>
