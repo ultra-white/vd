@@ -38,8 +38,7 @@ export default function ArticlePage() {
 
         const base = process.env.NEXT_PUBLIC_API_URL || ''
 
-        const urlPath: string =
-          item?.general_image?.url ?? ''
+        const urlPath: string = item?.general_image?.url ?? ''
 
         const imageUrl =
           urlPath &&
@@ -101,14 +100,16 @@ export default function ArticlePage() {
           </div>
         </div>
 
-        <Image
-          src={'http://localhost:1337/uploads/test_85b90d5735.jpg'}
-          width={1920}
-          height={1080}
-          alt="Изображение статьи"
-          className="mx-auto mt-[25px] w-full max-w-[1440px]"
-          unoptimized
-        />
+        {article && (
+          <Image
+            src={article.general_image || '/images/product.jpg'}
+            width={1920}
+            height={1080}
+            alt="Изображение статьи"
+            className="mx-auto mt-[25px] w-full max-w-[1440px]"
+            unoptimized
+          />
+        )}
 
         <div className="mx-auto mt-[25px] flex max-w-[1200px] flex-col items-center">
           <nav className="text-[10px] leading-none text-black/50 md:text-[18px]">
