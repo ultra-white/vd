@@ -86,13 +86,13 @@ export default function ArticlePage() {
     <>
       <Header />
       <main className="mx-auto my-[25px] mt-[100px] h-fit min-h-screen max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] 2xl:px-5 3xl:px-[10px]">
-        <div className="mx-auto flex max-w-[1200px] justify-between">
-          <p className="text-[20px] lg:text-[30px]">Поделиться</p>
-          <div className="flex items-center gap-[15px]">
+        <div className="mx-auto flex max-w-[1200px] items-center justify-between">
+          <p className="leading text-[20px] lg:text-[30px]">Поделиться</p>
+          <div className="flex gap-[15px]">
             <button
               onClick={instaShare}
               className="cursor-pointer"
-              aria-label="Поделиться (Instagram/системный share)"
+              aria-label="Поделиться системный share"
             >
               <Image
                 src="/images/link-rounded-dark.svg"
