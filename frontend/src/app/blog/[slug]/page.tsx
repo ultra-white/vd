@@ -115,7 +115,7 @@ export default function ArticlePage() {
           />
         )}
 
-        <div className="mx-auto mt-[25px] flex max-w-[1200px] flex-col items-center">
+        <div className="mx-auto mt-[15px] flex max-w-[1200px] flex-col items-center">
           <nav className="text-[10px] leading-none text-black/50 md:text-[18px]">
             <Link href="/" className="hover:underline">
               Главная
@@ -136,7 +136,7 @@ export default function ArticlePage() {
               components={{
                 p: ({ children, ...props }) => (
                   <p
-                    className="mt-[15px] text-[16px] lg:text-[18px] xl:text-[20px]"
+                    className="mt-[15px] text-[16px] leading-[105%] lg:text-[18px] xl:text-[20px]"
                     {...props}
                   >
                     {children}
@@ -191,17 +191,26 @@ export default function ArticlePage() {
                   </h6>
                 ),
                 ul: ({ children, ...props }) => (
-                  <ul className="my-4 list-disc space-y-2 pl-6" {...props}>
+                  <ul
+                    className="my-4 list-disc space-y-2 pl-6 leading-[105%]"
+                    {...props}
+                  >
                     {children}
                   </ul>
                 ),
                 ol: ({ children, ...props }) => (
-                  <ol className="my-4 list-decimal space-y-2 pl-6" {...props}>
+                  <ol
+                    className="my-4 list-decimal space-y-2 pl-6 leading-[105%]"
+                    {...props}
+                  >
                     {children}
                   </ol>
                 ),
                 li: ({ children, ...props }) => (
-                  <li className="text-[16px] text-[18px] xl:text-[20px]" {...props}>
+                  <li
+                    className="text-[16px] lg:text-[18px] xl:text-[20px]"
+                    {...props}
+                  >
                     {children}
                   </li>
                 ),
