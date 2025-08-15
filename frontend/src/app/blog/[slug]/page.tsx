@@ -129,14 +129,14 @@ export default function ArticlePage() {
           <h1 className="mt-[25px] text-center font-lighthaus text-[32px] leading-none lg:text-[48px] xl:text-[65px]">
             {article?.name}
           </h1>
-          <div className="flex w-full flex-col">
+          <div className="mt-[25px] flex w-full flex-col">
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
               components={{
                 p: ({ children, ...props }) => (
                   <p
-                    className="mt-[15px] text-[16px] lg:text-[18px]"
+                    className="mt-[15px] text-[16px] lg:text-[18px] xl:text-[20px]"
                     {...props}
                   >
                     {children}
@@ -201,7 +201,7 @@ export default function ArticlePage() {
                   </ol>
                 ),
                 li: ({ children, ...props }) => (
-                  <li className="text-[18px]" {...props}>
+                  <li className="text-[16px] text-[18px] xl:text-[20px]" {...props}>
                     {children}
                   </li>
                 ),

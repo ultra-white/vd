@@ -40,7 +40,7 @@ const Delivery = () => {
           </h3>
           <ul className="mt-2 space-y-0 text-[8px] not-sm:leading-[145%] sm:space-y-[3px] sm:text-[10px] lg:text-[10px] xl:text-[12px] 2xl:text-[16px] 3xl:space-y-[12px] 3xl:text-[18px]">
             <li className="font-semibold">Яндекс Доставка</li>
-            <li>Бесплатно в Москве и МО, 500 ₽ — в регионы</li>
+            <li>Бесплатно в Москве и МО, от 500 ₽ — в регионы</li>
             <li>1–3 дня, хранение в ПВЗ до 7 дн</li>
             <li className="font-semibold">Почта России</li>
             <li>500 ₽ до отделения</li>
