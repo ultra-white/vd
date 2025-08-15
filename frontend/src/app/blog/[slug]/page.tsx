@@ -143,12 +143,12 @@ export default function ArticlePage() {
                   </p>
                 ),
                 h1: ({ children, ...props }) => (
-                  <h1
+                  <h2
                     className="mt-[25px] font-lighthaus text-[32px] leading-none md:text-[40px]"
                     {...props}
                   >
                     {children}
-                  </h1>
+                  </h2>
                 ),
                 h2: ({ children, ...props }) => (
                   <h2
@@ -159,36 +159,36 @@ export default function ArticlePage() {
                   </h2>
                 ),
                 h3: ({ children, ...props }) => (
-                  <h3
+                  <h2
                     className="mt-[25px] font-lighthaus text-[24px] leading-none md:text-[28px]"
                     {...props}
                   >
                     {children}
-                  </h3>
+                  </h2>
                 ),
                 h4: ({ children, ...props }) => (
-                  <h4
+                  <h2
                     className="mt-[25px] font-lighthaus text-[20px] leading-none md:text-[22px]"
                     {...props}
                   >
                     {children}
-                  </h4>
+                  </h2>
                 ),
                 h5: ({ children, ...props }) => (
-                  <h5
+                  <h2
                     className="mt-[25px] font-lighthaus text-[18px] leading-none font-semibold"
                     {...props}
                   >
                     {children}
-                  </h5>
+                  </h2>
                 ),
                 h6: ({ children, ...props }) => (
-                  <h6
+                  <h2
                     className="mt-[25px] font-lighthaus text-[16px] leading-none tracking-wide uppercase"
                     {...props}
                   >
                     {children}
-                  </h6>
+                  </h2>
                 ),
                 ul: ({ children, ...props }) => (
                   <ul
