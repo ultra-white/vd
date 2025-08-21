@@ -58,7 +58,7 @@ export default function ArticlePage() {
     if (slug) fetchArticle()
   }, [slug])
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || '' // В dev: http://localhost:3000
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || ''
   const pageUrl = `${origin}/blog/${slug}`
 
   const title = article?.name ?? 'Статья'
@@ -110,7 +110,7 @@ export default function ArticlePage() {
             width={1920}
             height={1080}
             alt="Изображение статьи"
-            className="mx-auto mt-[25px] max-h-[800px] w-full max-w-[1440px]"
+            className="mx-auto mt-[25px] max-h-[800px] w-full max-w-[1440px] object-cover object-top"
             unoptimized
           />
         )}

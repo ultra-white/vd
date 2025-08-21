@@ -29,7 +29,7 @@ const ArticlePrev = ({ article }: ArticlePrevProps) => {
         height={415}
         alt={article.title}
         unoptimized
-        className="max-h-[222px] w-full object-cover object-top lg:max-h-[415px]"
+        className="h-full max-h-[222px] w-full object-cover object-top lg:max-h-[415px]"
       />
       <h4 className="mt-[10px] text-[14px] lg:mt-[15px] lg:text-[24px]">
         {article.title}
