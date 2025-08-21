@@ -4,7 +4,7 @@ import { lighthaus, montserrat } from './fonts'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'VentoDoro',
+  title: "Vento D'oro",
   description:
     'Итальянская классика в каждой детали. Утонченные силуэты, роскошные ткани и безупречный крой для создания неповторимого женственного образа.',
 }

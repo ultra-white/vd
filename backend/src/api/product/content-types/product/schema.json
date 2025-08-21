@@ -43,7 +43,7 @@
     },
     "description": {
       "type": "text",
-      "maxLength": 255,
+      "maxLength": 350,
       "required": true
     },
     "structure": {
@@ -58,12 +58,12 @@
     },
     "product_parametres": {
       "type": "string",
-      "maxLength": 75,
+      "maxLength": 150,
       "required": true
     },
     "model_parametres": {
       "type": "string",
-      "maxLength": 75,
+      "maxLength": 150,
       "required": true
     }
   }

@@ -12,6 +12,7 @@ const sizes = ['XS', 'S', 'M']
 interface Product {
   name: string
   price: number
+  quantity: number
   image: string
   images?: string[]
   description?: string
@@ -52,6 +53,7 @@ export default function ProductPage() {
         setProduct({
           name: productData.name,
           price: productData.price,
+          quantity: productData.quantity,
           image: imageUrl,
           images: images,
           description: productData.description,
@@ -60,6 +62,8 @@ export default function ProductPage() {
           product_parametres: productData.product_parametres,
           model_parametres: productData.model_parametres,
         })
+
+        setQuantity(productData.quantity > 0 ? 1 : 0)
       } catch (err) {
         console.error('Ошибка при загрузке товара:', err)
       }
@@ -159,57 +163,63 @@ export default function ProductPage() {
                   {Number(product.price)} руб
                 </p>
 
-                {/* Размеры */}
-                <div className="mt-[25px] flex gap-2 lg:mt-[75px]">
-                  {sizes.map((size) => (
-                    <Button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      active={selectedSize === size}
-                      fullWidth
-                    >
-                      {size}
-                    </Button>
-                  ))}
-                  <Button className="flex h-[45px] w-[45px] items-center justify-center px-[20px] lg:h-[60px] lg:w-[60px]">
-                    <Image
-                      src="/images/document.svg"
-                      width={24}
-                      height={24}
-                      alt="Таблица размеров"
-                      className="min-h-[20px] min-w-[20px] lg:min-h-[24px] lg:min-w-[24px]"
-                    />
-                  </Button>
-                </div>
-
-                {/* Кол-во + корзина */}
-                <div className="mt-[15px] flex items-center gap-4">
-                  <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] hover:bg-transparent lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="h-full w-full cursor-pointer rounded-l-full border-r border-r-transparent pr-[20px] pl-[20px] duration-100 hover:border-r-black hover:bg-black/10"
-                    >
-                      -
-                    </button>
-                    <span className="pointer-events-none absolute left-1/2 -translate-x-1/2">
-                      {quantity}
-                    </span>
-                    <button
-                      onClick={() => setQuantity(Math.min(10, quantity + 1))}
-                      className="h-full w-full cursor-pointer rounded-r-full border-l border-l-transparent pr-[20px] pl-[20px] duration-100 hover:border-l-black hover:bg-black/10"
-                    >
-                      +
-                    </button>
-                  </div>
-                  <Button
-                    fullWidth
-                    className="hover:none hover:bg-black/90"
-                    onClick={handleAddToCart}
-                    theme="dark"
-                  >
-                    Добавить в корзину
-                  </Button>
-                </div>
+                {quantity > 0 ? (
+                  <>
+                    {/* Размеры */}
+                    <div className="mt-[25px] flex gap-2 lg:mt-[75px]">
+                      {sizes.map((size) => (
+                        <Button
+                          key={size}
+                          onClick={() => setSelectedSize(size)}
+                          active={selectedSize === size}
+                          fullWidth
+                        >
+                          {size}
+                        </Button>
+                      ))}
+                      <Button className="flex h-[45px] w-[45px] items-center justify-center px-[20px] lg:h-[60px] lg:w-[60px]">
+                        <Image
+                          src="/images/document.svg"
+                          width={24}
+                          height={24}
+                          alt="Таблица размеров"
+                          className="min-h-[20px] min-w-[20px] lg:min-h-[24px] lg:min-w-[24px]"
+                        />
+                      </Button>
+                    </div>
+                    <div className="mt-[15px] flex items-center gap-4">
+                      <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] hover:bg-transparent lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
+                        <button
+                          onClick={() => setQuantity(Math.max(0, quantity - 1))}
+                          className="h-full w-full cursor-pointer rounded-l-full border-r border-r-transparent pr-[20px] pl-[20px] duration-100 hover:border-r-black hover:bg-black/10"
+                        >
+                          -
+                        </button>
+                        <span className="pointer-events-none absolute left-1/2 -translate-x-1/2">
+                          {quantity}
+                        </span>
+                        <button
+                          onClick={() =>
+                            setQuantity(Math.min(10, quantity + 1))
+                          }
+                          className="h-full w-full cursor-pointer rounded-r-full border-l border-l-transparent pr-[20px] pl-[20px] duration-100 hover:border-l-black hover:bg-black/10"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <Button
+                        fullWidth
+                        className="hover:none hover:bg-black/90"
+                        onClick={handleAddToCart}
+                        theme="dark"
+                      >
+                        Добавить в корзину
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="mt-[15px] text-red-500">Нет в наличии</p>
+                )}
 
                 <p className="mt-[15px] text-[10px] text-gray-500 lg:text-[18px]">
                   * В подарок при заказе предоставляется гайд по уходу

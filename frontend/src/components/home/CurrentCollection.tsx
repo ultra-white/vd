@@ -7,16 +7,16 @@ export default function CurrentCollection() {
   const items = [
     {
       title: 'Unita',
-      price: '16 499 руб',
+      price: '20 000 руб',
       image: '/images/unita.jpg',
-      link: '/product/unita',
+      link: '/product/bop1rxilofbt9pk5ns4bqjpm',
       alt: 'Женщина в пальто Unita',
     },
     {
       title: 'Velato',
-      price: '16 499 руб',
+      price: '20 000 руб',
       image: '/images/velato.jpg',
-      link: '/product/velato',
+      link: '/product/dz4z7z0vt22yly18jrtfa28l',
       alt: 'Женщина в пальто Velato',
     },
   ]
@@ -46,7 +46,7 @@ export default function CurrentCollection() {
                 className={`absolute bottom-[30%] lg:top-[200px] ${
                   item.title === 'Velato'
                     ? 'text-right not-lg:left-1/2 not-lg:-translate-x-1/2 lg:right-[20px] 2xl:right-[50px] 3xl:right-[100px]'
-                    : 'not-lg:left-1/2 not-lg:-translate-x-1/2 lg:left-[20px] xl:left-[50px] 2xl:left-[100px]'
+                    : 'not-lg:left-1/2 not-lg:-translate-x-1/2 lg:left-[20px] xl:left-[50px] 2xl:left-[50px] 3xl:left-[100px]'
                 } text-center text-white lg:text-black`}
               >
                 <h4 className="border-b-2 font-lighthaus text-[25px] leading-none md:text-[35px] xl:text-[60px]">

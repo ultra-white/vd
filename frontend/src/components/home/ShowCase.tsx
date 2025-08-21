@@ -12,7 +12,7 @@ const ShowCase = () => {
           className="h-full w-1/2 not-sm:w-full"
         />
         <div className="h-full text-center sm:w-1/2">
-          <div className="mx-auto w-[90%] 3xl:w-[80%]">
+          <div className="mx-auto w-[90%]">
             <h3 className="font-lighthaus text-[17px] leading-[120%] not-sm:mt-[10px] md:text-[24px] lg:text-[35px] xl:text-[40px] 2xl:text-[55px] 3xl:text-[65px]">
               Не производство,
               <br /> а пошив с душой
@@ -31,7 +31,7 @@ const ShowCase = () => {
       </div>
       <div className="flex items-center not-sm:mt-[25px] not-sm:flex-col-reverse">
         <div className="h-full text-center sm:w-1/2">
-          <div className="mx-auto w-[90%] 3xl:w-[80%]">
+          <div className="mx-auto w-[90%]">
             <h3 className="font-lighthaus text-[17px] leading-[120%] not-sm:mt-[10px] md:text-[24px] lg:text-[35px] xl:text-[40px] 2xl:text-[55px] 3xl:text-[65px]">
               Крой не «как у всех»,
               <br />а «как удобно»
@@ -61,11 +61,11 @@ const ShowCase = () => {
           className="h-full w-1/2 not-sm:w-full"
         />
         <div className="h-full text-center sm:w-[50%]">
-          <div className="mx-auto w-[90%] 3xl:w-[80%]">
+          <div className="mx-auto w-[90%]">
             <h3 className="font-lighthaus text-[17px] leading-[120%] not-sm:mt-[10px] md:text-[24px] lg:text-[35px] xl:text-[40px] 2xl:text-[55px] 3xl:text-[65px]">
-              Ткань — не абы какая,
-              <br /> а та, которая греет
-              <br /> и не растягивается
+              Создано для тех,
+              <br /> кто ценит безупречность
+              <br /> в каждой детали
             </h3>
             <p className="mt-[10px] text-[10px] leading-[107%] sm:text-[13px] md:mt-[20px] xl:mt-[45px] xl:text-[24px]">
               Мы не экономим на том, что вы будете носить. В наших пальто —

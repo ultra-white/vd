@@ -488,7 +488,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     description: Schema.Attribute.Text &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 255;
+        maxLength: 350;
       }>;
     image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
     images: Schema.Attribute.Media<'images', true>;
@@ -501,7 +501,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     model_parametres: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 75;
+        maxLength: 150;
       }>;
     name: Schema.Attribute.String &
       Schema.Attribute.Required &
@@ -519,7 +519,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
     product_parametres: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
-        maxLength: 75;
+        maxLength: 150;
       }>;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.Integer & Schema.Attribute.Required;

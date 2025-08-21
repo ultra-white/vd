@@ -2,15 +2,13 @@ import Image from 'next/image'
 
 const founders = [
   {
-    name: 'Дмитрий Алексеев',
-    role: 'Арт Директор',
-    src: '/images/dmitry-1.jpg',
+    name: 'Хоботов Михаил',
+    src: '/images/mihail_hobotov.jpg',
     alt: 'Портрет Дмитрия Алексеева в тёплом свете',
   },
   {
-    name: 'Дмитрий Алексеев',
-    role: 'Арт Директор',
-    src: '/images/dmitry-2.jpg',
+    name: 'Поротников Алексей',
+    src: '/images/alex_porotnikov.jpg',
     alt: 'Портрет Дмитрия Алексеева на светлом фоне',
   },
 ]
@@ -25,7 +23,7 @@ const Founders = () => {
         </h2>
 
         <div className="mt-[15px] grid w-full grid-cols-2 gap-[30px] md:mt-[25px] lg:mt-0">
-          {founders.map(({ name, role, src, alt }, i) => (
+          {founders.map(({ name, src, alt }, i) => (
             <figure key={i} className="flex flex-col">
               <div className="relative w-full overflow-hidden">
                 {/* картинка с фиксированным соотношением как в макете */}
@@ -44,9 +42,6 @@ const Founders = () => {
               <figcaption className="mt-[5px] md:mt-[10px] lg:mt-[18px]">
                 <p className="text-[12px] md:text-[14px] lg:text-[20px] xl:text-[35px]">
                   {name}
-                </p>
-                <p className="mt-[5px] text-[8px] text-black/60 md:text-[12px] lg:text-[16px] xl:text-[24px]">
-                  {role}
                 </p>
               </figcaption>
             </figure>
