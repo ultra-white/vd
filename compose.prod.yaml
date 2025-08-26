@@ -97,7 +97,7 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
-      - ./backend/psql/data:/var/lib/postgresql/data
+      - ./psql/data:/var/lib/postgresql/data
     restart: always
 
 networks:
