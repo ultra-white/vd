@@ -523,6 +523,7 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       }>;
     publishedAt: Schema.Attribute.DateTime;
     quantity: Schema.Attribute.Integer & Schema.Attribute.Required;
+    reviews: Schema.Attribute.Relation<'oneToMany', 'api::review.review'>;
     season: Schema.Attribute.String &
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
@@ -532,6 +533,43 @@ export interface ApiProductProduct extends Struct.CollectionTypeSchema {
       Schema.Attribute.Required &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 75;
+      }>;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiReviewReview extends Struct.CollectionTypeSchema {
+  collectionName: 'reviews';
+  info: {
+    displayName: '\u041E\u0442\u0437\u044B\u0432\u044B';
+    pluralName: 'reviews';
+    singularName: 'review';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::review.review'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String & Schema.Attribute.Required;
+    product: Schema.Attribute.Relation<'manyToOne', 'api::product.product'>;
+    published: Schema.Attribute.Boolean &
+      Schema.Attribute.Required &
+      Schema.Attribute.DefaultTo<false>;
+    publishedAt: Schema.Attribute.DateTime;
+    text: Schema.Attribute.Text &
+      Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 1000;
       }>;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1051,6 +1089,7 @@ declare module '@strapi/strapi' {
       'api::article.article': ApiArticleArticle;
       'api::order.order': ApiOrderOrder;
       'api::product.product': ApiProductProduct;
+      'api::review.review': ApiReviewReview;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

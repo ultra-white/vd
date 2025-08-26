@@ -65,6 +65,12 @@
       "type": "string",
       "maxLength": 150,
       "required": true
+    },
+    "reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::review.review",
+      "mappedBy": "product"
     }
   }
 }
