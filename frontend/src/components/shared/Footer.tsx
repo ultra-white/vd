@@ -42,43 +42,41 @@ const Footer = () => {
                 </div>
               </div>
               <div>
-                <div className="">
-                  <div>
-                    <p className="font-lighthaus text-[14px] not-md:text-right xl:text-[24px]">
-                      Социальные <br /> сети
-                    </p>
-                    <div className="mt-[12px] flex gap-[10px] xl:mt-[25px] xl:gap-[15px] xl:text-[24px]">
-                      <Link href={'https://t.me/VENTODORO'} target="_blank">
-                        <Image
-                          src={'/images/telegram-rounded.svg'}
-                          height={48}
-                          width={48}
-                          alt="telegram"
-                          className="not-xl:w-[30px]"
-                        />
-                      </Link>
-                      <Link
-                        href={'https://www.instagram.com/vento_doro_'}
-                        target="_blank"
-                      >
-                        <Image
-                          src={'/images/insta-rounded.svg'}
-                          height={48}
-                          width={48}
-                          alt="instagram"
-                          className="not-xl:w-[30px]"
-                        />
-                      </Link>
-                      <Link href={'https://vk.com/ventoo_doro'} target="_blank">
-                        <Image
-                          src={'/images/vk-rounded.svg'}
-                          height={48}
-                          width={48}
-                          alt="vk"
-                          className="not-xl:w-[30px]"
-                        />
-                      </Link>
-                    </div>
+                <div>
+                  <p className="font-lighthaus text-[14px] not-md:text-right xl:text-[24px]">
+                    Социальные <br /> сети
+                  </p>
+                  <div className="mt-[12px] flex gap-[10px] xl:mt-[25px] xl:gap-[15px] xl:text-[24px]">
+                    <Link href={'https://t.me/VENTODORO'} target="_blank">
+                      <Image
+                        src={'/images/telegram-rounded.svg'}
+                        height={48}
+                        width={48}
+                        alt="telegram"
+                        className="not-xl:w-[30px]"
+                      />
+                    </Link>
+                    <Link
+                      href={'https://www.instagram.com/vento_doro_'}
+                      target="_blank"
+                    >
+                      <Image
+                        src={'/images/insta-rounded.svg'}
+                        height={48}
+                        width={48}
+                        alt="instagram"
+                        className="not-xl:w-[30px]"
+                      />
+                    </Link>
+                    <Link href={'https://vk.com/ventoo_doro'} target="_blank">
+                      <Image
+                        src={'/images/vk-rounded.svg'}
+                        height={48}
+                        width={48}
+                        alt="vk"
+                        className="not-xl:w-[30px]"
+                      />
+                    </Link>
                   </div>
                 </div>
               </div>
