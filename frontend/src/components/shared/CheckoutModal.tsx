@@ -1,7 +1,9 @@
 'use client'
 
 import { Button } from '@/components/shared'
+import { useCartStore } from '@/stores/cartStore'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import CheckoutInput from '../ui/CheckoutInput'
 
@@ -18,7 +20,7 @@ const options: { id: DeliveryMethod; label: string }[] = [
 ]
 
 type CartItem = {
-  id: string | number // фронтовый id
+  id: string | number
   name: string
   price: number | string
   quantity: number
@@ -27,6 +29,9 @@ type CartItem = {
 }
 
 export default function CheckoutModal({ onClose }: CheckoutModalProps) {
+  const router = useRouter()
+  const clearLocalStorage = useCartStore((s) => s.clear)
+
   const [step, setStep] = useState(1)
 
   // корзина
@@ -261,24 +266,8 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
         return
       }
 
-      // успех
-      alert('Заказ оформлен! Мы свяжемся с вами.')
-
-      // очистка корзины в localStorage
-      try {
-        const raw = localStorage.getItem('cart')
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          if (parsed && typeof parsed === 'object' && parsed.state) {
-            parsed.state.items = []
-            localStorage.setItem('cart', JSON.stringify(parsed))
-          } else {
-            localStorage.removeItem('cart')
-          }
-        }
-      } catch {}
-
-      onClose()
+      setStep(4)
+      clearLocalStorage()
     } catch (err) {
       console.error(err)
       alert('Ошибка при оформлении заказа. Попробуйте позже.')
@@ -288,10 +277,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   }
 
   return (
-    <div
-      onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 md:px-6"
-    >
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 md:px-6">
       <div
         className="relative w-full max-w-[520px] rounded-xl bg-white px-7 pt-14 pb-7 text-black shadow-lg lg:rounded-2xl lg:px-[50px] lg:pt-[64px] lg:pb-[32px]"
         onClick={(e) => e.stopPropagation()}
@@ -644,6 +630,32 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                 Назад
               </Button>
             </div>
+          </>
+        )}
+
+        {step === 4 && (
+          <>
+            <h2 className="text-center font-lighthaus text-[22px] leading-[107%] md:text-[26px] lg:text-[30px]">
+              Заказ оформлен
+              <br />
+              успешно
+            </h2>
+
+            <p className="mt-[25px] text-center text-[14px] text-black/70 sm:text-[16px] lg:text-[20px]">
+              Мы свяжемся с вами в ближайшее время
+            </p>
+
+            <Button
+              fullWidth
+              className="mt-6 sm:mt-8"
+              theme="dark"
+              onClick={() => {
+                onClose()
+                router.push('/')
+              }}
+            >
+              Вернуться на главную
+            </Button>
           </>
         )}
       </div>

@@ -73,7 +73,7 @@ const Delivery = () => {
             </p>
             <a
               href="mailto:info@ventodoro.fi"
-              className="mt-[5px] block text-[10px] text-white/70 xl:mt-[10px]"
+              className="mt-[5px] block text-[10px] text-white/70 md:text-[16px] xl:mt-[10px]"
             >
               info@ventodoro.fi
             </a>

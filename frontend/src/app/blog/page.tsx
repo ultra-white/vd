@@ -50,8 +50,10 @@ export default function Blog() {
   return (
     <>
       <Header />
-      <main className="mx-auto my-[25px] h-fit min-h-screen max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] lg:my-[75px] 2xl:px-5 3xl:px-[10px]">
-        <h1 className="text-center text-[30px] md:text-left">Блог</h1>
+      <main className="mx-auto py-[25px] h-fit min-h-[calc(100vh-120px)] max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] lg:py-[75px] 2xl:px-5 3xl:px-[10px]">
+        <h1 className="text-center text-[24px] md:text-left lg:text-[30px]">
+          Блог
+        </h1>
         <div className="mt-[25px] grid grid-cols-1 gap-[20px] sm:grid-cols-2 xl:grid-cols-3">
           {articles.map((article) => (
             <ArticlePrev key={article.id} article={article} />

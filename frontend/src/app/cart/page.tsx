@@ -22,7 +22,7 @@ export default function CartPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-[1740px] px-[10px] pt-[35px] pb-[80px] sm:px-[25px] md:px-[50px] lg:pt-[100px] xl:px-[50px] 2xl:px-[20px] 3xl:px-[10px]">
+      <main className="mx-auto min-h-[calc(100vh-120px)] max-w-[1740px] px-[10px] pt-[35px] pb-[80px] sm:px-[25px] md:px-[50px] lg:pt-[100px] xl:px-[50px] 2xl:px-[20px] 3xl:px-[10px]">
         <h1 className="hidden">Корзина</h1>
 
         <div className="flex flex-col-reverse gap-10 leading-none lg:flex-col xl:flex-row xl:justify-between">
