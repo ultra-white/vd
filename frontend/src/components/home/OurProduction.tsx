@@ -17,7 +17,7 @@ const OurProduction = () => {
         {/* Блок 1 */}
         <div className="relative md:col-span-4">
           <Image
-            src="/images/tailoring.jpg"
+            src="/images/tailoring.png"
             alt="Пошив"
             width={470}
             height={370}
