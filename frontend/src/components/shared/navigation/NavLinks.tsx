@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
 const navItems = [
   { label: 'Каталог', href: '/catalog' },
   { label: 'Блог', href: '/blog' },
-  { label: 'Отзывы', href: '/reviews' },
+  // { label: 'Отзывы', href: '/reviews' },
   { label: 'Корзина', href: '/cart', showBadge: true },
 ]
 
