@@ -49,7 +49,7 @@ const ShowCase = () => {
           width={960}
           height={960}
           alt="Описание"
-          className="h-full w-[50.1%] not-sm:w-full"
+          className="h-full w-[50%] not-sm:w-full"
         />
       </div>
       <div className="flex items-center not-sm:mt-[25px] not-sm:flex-col">
