@@ -9,13 +9,15 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 const images = [
   '/images/gallery_1.jpg',
   '/images/gallery_2.jpg',
-  '/images/unita.jpg',
-  '/images/velato.jpg',
+  '/images/gallery_3.jpg',
+  '/images/gallery_4.jpg',
+  '/images/gallery_5.jpg',
+  '/images/gallery_6.jpg',
 ]
 
 export default function Gallery() {
   return (
-    <section className="relative mt-[25px] md:mt-[50px] lg:mt-[150px]">
+    <section className="relative mt-[25px] select-none md:mt-[50px] lg:mt-[150px]">
       <Swiper
         style={{ ['--swiper-navigation-color']: '#fff' } as React.CSSProperties}
         modules={[Navigation, Autoplay]}
