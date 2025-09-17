@@ -15,7 +15,10 @@ const founders = [
 
 const Founders = () => {
   return (
-    <section className="mx-auto max-w-[1740px] px-[10px] pt-[35px] sm:px-[25px] md:px-[50px] md:pt-[50px] lg:pt-[150px] 2xl:px-[20px] 3xl:px-[10px]">
+    <section
+      id="team"
+      className="mx-auto max-w-[1740px] px-[10px] pt-[35px] sm:px-[25px] md:px-[50px] md:pt-[50px] lg:pt-[150px] 2xl:px-[20px] 3xl:px-[10px]"
+    >
       <div className="flex h-fit w-full items-center justify-between border-y-[2px] py-[10px] leading-none not-lg:flex-col md:py-[35px] lg:py-[50px]">
         <h2 className="font-lighthaus text-[17px] not-lg:text-center sm:text-[24px] lg:w-1/2 lg:text-[32px] xl:text-[46px] 2xl:text-[60px]">
           СОЗДАТЕЛИ <br />

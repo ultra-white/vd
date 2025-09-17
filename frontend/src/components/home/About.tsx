@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import SmoothScrollLink from '../utils/SmoothScrollLink'
 
 const About = () => {
   return (
@@ -21,12 +21,12 @@ const About = () => {
             передать атмосферу стиля, роскоши и величия.
           </p>
           <div className="mt-[15px] flex w-full gap-[60px] text-[10px] not-lg:justify-around lg:mt-[32px] lg:text-[16px] xl:text-[22px] 2xl:text-[30px]">
-            <Link href={'#team'} className="border-b-1 lg:pb-3">
+            <SmoothScrollLink to="team" className="border-b-1 lg:pb-3">
               Подробнее о команде
-            </Link>
-            <Link href={'#production'} className="border-b-1 lg:pb-3">
+            </SmoothScrollLink>
+            <SmoothScrollLink to="our_production" className="border-b-1 lg:pb-3">
               Подробнее о производстве
-            </Link>
+            </SmoothScrollLink>
           </div>
         </div>
       </div>

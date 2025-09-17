@@ -9,14 +9,14 @@ export default function CurrentCollection() {
       title: 'Unita',
       price: '20 000 руб',
       image: '/images/unita.jpg',
-      link: '/product/bop1rxilofbt9pk5ns4bqjpm',
+      link: '/catalog/unita',
       alt: 'Женщина в пальто Unita',
     },
     {
       title: 'Velato',
       price: '20 000 руб',
       image: '/images/velato.jpg',
-      link: '/product/dz4z7z0vt22yly18jrtfa28l',
+      link: '/catalog/velato',
       alt: 'Женщина в пальто Velato',
     },
   ]

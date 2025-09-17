@@ -2,8 +2,11 @@ import Image from 'next/image'
 
 const OurProduction = () => {
   return (
-    <section className="mx-auto max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] 2xl:px-[20px] 3xl:px-[10px]">
-      <div className="mt-[35px] flex justify-between gap-[5px] leading-none not-md:flex-col not-md:text-center md:mt-[50px] lg:mt-[150px]">
+    <section
+      id="our_production"
+      className="mx-auto max-w-[1740px] px-[10px] sm:px-[25px] md:px-[50px] 2xl:px-[20px] 3xl:px-[10px]"
+    >
+      <div className="pt-[35px] flex justify-between gap-[5px] leading-none not-md:flex-col not-md:text-center md:pt-[50px] lg:pt-[150px]">
         <h2 className="text-[10px] sm:text-[18px] lg:text-[30px] xl:pt-[11px]">
           Наше производство
         </h2>
