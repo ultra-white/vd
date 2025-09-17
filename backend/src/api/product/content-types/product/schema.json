@@ -16,6 +16,11 @@
       "maxLength": 50,
       "required": true
     },
+    "slug": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
     "price": {
       "type": "decimal",
       "required": true,
