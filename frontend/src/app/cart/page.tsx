@@ -100,7 +100,7 @@ export default function CartPage() {
 
                           <button
                             onClick={() => removeItem(item.id, item.size)}
-                            className="text-[18px] text-black/50 not-lg:hidden hover:text-black"
+                            className="cursor-pointer text-[18px] text-black/50 not-lg:hidden hover:text-black"
                           >
                             Удалить
                           </button>
