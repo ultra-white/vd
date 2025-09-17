@@ -104,6 +104,7 @@ export default function ProductClient({
       price: product.price,
       quantity,
       size: selectedSize,
+      slug: product.slug,
     })
 
     const afterCount = getTotalCount()

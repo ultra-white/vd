@@ -10,6 +10,7 @@ export interface CartItem {
   price: number
   quantity: number
   size: string
+  slug: string
 }
 
 interface CartState {

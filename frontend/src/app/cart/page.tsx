@@ -42,11 +42,11 @@ export default function CartPage() {
             ) : (
               items.map((item) => (
                 <div
-                  key={`${item.id + 1}-${item.size}`}
+                  key={`${item.documentId + 1}-${item.size}`}
                   className="flex h-full gap-[10px] border-b-2 border-black pb-[20px] md:gap-[45px]"
                 >
                   <Link
-                    href={`/product/${item.id}`}
+                    href={`/catalog/${item.slug}`}
                     className="shrink-0 overflow-hidden"
                   >
                     <Image
@@ -76,9 +76,9 @@ export default function CartPage() {
                             <button
                               onClick={() => {
                                 if (item.quantity === 1) {
-                                  removeItem(item.id, item.size)
+                                  removeItem(item.documentId, item.size)
                                 } else {
-                                  updateQuantity(item.id, item.size, -1)
+                                  updateQuantity(item.documentId, item.size, -1)
                                 }
                               }}
                               className="h-full w-full cursor-pointer rounded-l-full border-r border-r-transparent pr-[20px] pl-[30px] duration-100 hover:border-r-black hover:bg-black/10"
@@ -90,7 +90,7 @@ export default function CartPage() {
                             </span>
                             <button
                               onClick={() =>
-                                updateQuantity(item.id, item.size, 1)
+                                updateQuantity(item.documentId, item.size, 1)
                               }
                               className="h-full w-full cursor-pointer rounded-r-full border-l border-l-transparent pr-[30px] pl-[20px] duration-100 hover:border-l-black hover:bg-black/10"
                             >
@@ -99,7 +99,9 @@ export default function CartPage() {
                           </div>
 
                           <button
-                            onClick={() => removeItem(item.id, item.size)}
+                            onClick={() =>
+                              removeItem(item.documentId, item.size)
+                            }
                             className="cursor-pointer text-[18px] text-black/50 not-lg:hidden hover:text-black"
                           >
                             Удалить
@@ -136,7 +138,7 @@ export default function CartPage() {
             <div className="space-y-[20px] text-[16px] lg:text-[24px]">
               {items.map((item) => (
                 <div
-                  key={`${item.id + 1}-${item.size}`}
+                  key={`${item.documentId + 1}-${item.size}`}
                   className="flex justify-between"
                 >
                   <span>{item.name}</span>
