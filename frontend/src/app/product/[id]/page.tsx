@@ -138,7 +138,6 @@ export default function ProductPage() {
                 width={1000}
                 height={1000}
                 className="max-h-[90vh] w-auto cursor-zoom-out object-contain"
-                unoptimized
               />
             </button>
           )}
@@ -158,7 +157,6 @@ export default function ProductPage() {
                         width={600}
                         height={600}
                         className="h-[65px] w-[65px] cursor-pointer object-cover object-top transition md:h-[150px] md:w-[150px]"
-                        unoptimized
                       />
                     </button>
                   ))}
@@ -174,7 +172,6 @@ export default function ProductPage() {
                     width={676}
                     height={898}
                     className="h-[452px] max-h-screen object-cover object-top md:h-[898px]"
-                    unoptimized
                   />
                 </button>
               </div>

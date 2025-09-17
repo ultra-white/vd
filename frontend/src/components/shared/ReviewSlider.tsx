@@ -92,7 +92,6 @@ export default function ReviewsSlider() {
           alt={current!.product?.name || 'Фото отзыва'}
           fill
           priority
-          unoptimized
           className="object-cover object-top"
         />
       </div>

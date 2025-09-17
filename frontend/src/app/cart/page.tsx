@@ -55,7 +55,6 @@ export default function CartPage() {
                       width={240}
                       height={320}
                       className="h-[225px] w-fit object-cover md:h-[315px] md:w-full"
-                      unoptimized
                     />
                   </Link>
 

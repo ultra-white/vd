@@ -19,7 +19,6 @@ const ProductCard = ({ id, image, name, price }: ProductCardProps) => {
         width={560}
         height={755}
         className="w-[560px]"
-        unoptimized
       />
       <h2 className="mt-[20px] font-lighthaus text-[24px] leading-none lg:text-[35px]">
         {name}

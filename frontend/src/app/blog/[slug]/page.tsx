@@ -111,7 +111,6 @@ export default function ArticlePage() {
             height={1080}
             alt="Изображение статьи"
             className="mx-auto mt-[25px] max-h-[800px] w-full max-w-[1440px] object-cover object-top"
-            unoptimized
           />
         )}
 
@@ -224,7 +223,6 @@ export default function ArticlePage() {
                         alt={altText}
                         width={1920}
                         height={1080}
-                        unoptimized
                         className="mx-auto max-h-[600px] w-full max-w-[1920px] object-cover"
                         style={{ height: 'auto' }}
                       />
