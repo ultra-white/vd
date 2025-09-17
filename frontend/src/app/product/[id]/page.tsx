@@ -4,8 +4,8 @@ import { Button, Footer, Header } from '@/components/shared'
 import { useCartStore } from '@/stores/cartStore'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 
 const sizes = ['XS', 'S', 'M']
@@ -29,6 +29,9 @@ export default function ProductPage() {
   const [selectedSize, setSelectedSize] = useState('M')
   const [quantity, setQuantity] = useState(1)
   const [zoomedImage, setZoomedImage] = useState<string | null>(null)
+  const router = useRouter()
+  const [added, setAdded] = useState(false)
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -78,6 +81,7 @@ export default function ProductPage() {
   const handleAddToCart = () => {
     if (!product) return
     const beforeCount = getTotalCount()
+
     addItem({
       id: id as string,
       name: product.name,
@@ -86,14 +90,33 @@ export default function ProductPage() {
       quantity,
       size: selectedSize,
     })
+
     const afterCount = getTotalCount()
 
     if (afterCount > beforeCount) {
-      toast.success('Товар добавлен в корзину!')
+      toast.success('Товар добавлен в корзину!', {
+        position: 'top-right',
+        autoClose: 4500,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      })
+      setAdded(true)
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current)
+      resetTimerRef.current = setTimeout(() => setAdded(false), 5000)
     } else {
       toast.warn('Достигнут лимит одной позиции товара.')
     }
   }
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current)
+    }
+  }, [])
 
   return (
     <>
@@ -220,10 +243,12 @@ export default function ProductPage() {
                       <Button
                         fullWidth
                         className="hover:none hover:bg-black/90"
-                        onClick={handleAddToCart}
+                        onClick={
+                          added ? () => router.push('/cart') : handleAddToCart
+                        }
                         theme="dark"
                       >
-                        Добавить в корзину
+                        {added ? 'Перейти в корзину' : 'Добавить в корзину'}
                       </Button>
                     </div>
                   </>
