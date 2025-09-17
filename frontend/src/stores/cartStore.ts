@@ -63,7 +63,6 @@ export const useCartStore = create<CartState>()(
         }),
       clear: () => set({ items: [] }),
 
-      // ✅ вот это добавьте:
       getTotalCount: () =>
         get().items.reduce((acc, item) => acc + item.quantity, 0),
     }),

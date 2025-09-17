@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { ToastContainer, toast } from 'react-toastify'
 
 const sizes = ['XS', 'S', 'M']
 
@@ -72,10 +73,11 @@ export default function ProductPage() {
     if (id) fetchProduct()
   }, [id])
 
-  const { addItem } = useCartStore()
+  const { addItem, getTotalCount } = useCartStore()
 
   const handleAddToCart = () => {
     if (!product) return
+    const beforeCount = getTotalCount()
     addItem({
       id: id as string,
       name: product.name,
@@ -84,6 +86,13 @@ export default function ProductPage() {
       quantity,
       size: selectedSize,
     })
+    const afterCount = getTotalCount()
+
+    if (afterCount > beforeCount) {
+      toast.success('Товар добавлен в корзину!')
+    } else {
+      toast.warn('Достигнут лимит одной позиции товара.')
+    }
   }
 
   return (
@@ -92,6 +101,7 @@ export default function ProductPage() {
       <main className="min-h-screen">
         <section className="mx-auto mt-[25px] max-w-[1720px] px-[10px] pb-[35px] text-black sm:px-[25px] md:mt-[100px] md:px-[50px] lg:pb-[100px] 2xl:px-[20px] 3xl:px-[10px]">
           {/* Увеличение изображения */}
+          <ToastContainer />
           {zoomedImage && (
             <button
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
@@ -190,7 +200,7 @@ export default function ProductPage() {
                     <div className="mt-[15px] flex items-center gap-4">
                       <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] hover:bg-transparent lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
                         <button
-                          onClick={() => setQuantity(Math.max(0, quantity - 1))}
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
                           className="h-full w-full cursor-pointer rounded-l-full border-r border-r-transparent pr-[20px] pl-[20px] duration-100 hover:border-r-black hover:bg-black/10"
                         >
                           -
