@@ -1,4 +1,5 @@
 'use client'
+import type { Product } from '@/app/catalog/[slug]/page' // импорт типа из сервера (или продублируй интерфейс)
 import ProductSkeleton from '@/components/product/Sceleton'
 import { Button, Footer, Header } from '@/components/shared'
 import { useCartStore } from '@/stores/cartStore'
@@ -10,31 +11,29 @@ import { ToastContainer, toast } from 'react-toastify'
 
 const sizes = ['XS', 'S', 'M']
 
-interface Product {
-  name: string
-  price: number
-  quantity: number
-  image: string
-  images?: string[]
-  description?: string
-  structure?: string
-  season?: string
-  product_parametres?: string
-  model_parametres?: string
-}
-
-export default function ProductPage() {
+export default function ProductClient({
+  initialProduct,
+}: {
+  initialProduct?: Product | null
+}) {
   const { id } = useParams()
-  const [product, setProduct] = useState<Product | null>(null)
+  const [product, setProduct] = useState<Product | null>(initialProduct ?? null)
   const [selectedSize, setSelectedSize] = useState('M')
   const [quantity, setQuantity] = useState(1)
-  const [zoomedImage, setZoomedImage] = useState<string | null>(null)
+  const [zoomed, setZoomed] = useState(false)
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const [mainImage, setMainImage] = useState<string | null>(null)
+  const [mainImage, setMainImage] = useState<string | null>(
+    initialProduct?.image ?? null,
+  )
 
+  // Если хочешь — можно вообще не рефетчить, раз сервер уже дал данные:
   useEffect(() => {
+    // подстрахуемся: если initialProduct нет — тогда фетчим
+    const needFetch = !initialProduct
+    if (!needFetch) return
+
     const fetchProduct = async () => {
       try {
         const res = await fetch(
@@ -46,37 +45,53 @@ export default function ProductPage() {
           },
         )
         const json = await res.json()
-        const productData = json.data
-        if (!productData) return
+        const data = json.data
+        if (!data) return
 
-        const imageUrl = `${process.env.NEXT_PUBLIC_API_URL}${productData.image.url || productData.image?.url || ''}`
-        const images = (productData.images || []).map(
-          (img: { url: string }) =>
-            `${process.env.NEXT_PUBLIC_API_URL}${img.url}`,
-        )
+        const toAbs = (u?: string) =>
+          !u
+            ? ''
+            : u.startsWith('http')
+              ? u
+              : `${process.env.NEXT_PUBLIC_API_URL}${u}`
 
-        setProduct({
-          name: productData.name,
-          price: productData.price,
-          quantity: productData.quantity,
+        const imageUrl = toAbs(data.image?.url)
+        const images = (data.images || [])
+          .map((img: { url: string }) => toAbs(img?.url))
+          .filter((u: string) => !!u)
+
+        const normalized: Product = {
+          name: data.name,
+          price: data.price,
+          quantity: data.quantity,
           image: imageUrl,
-          images: images,
-          description: productData.description,
-          structure: productData.structure,
-          season: productData.season,
-          product_parametres: productData.product_parametres,
-          model_parametres: productData.model_parametres,
-        })
+          images,
+          description: data.description,
+          structure: data.structure,
+          season: data.season,
+          product_parametres: data.product_parametres,
+          model_parametres: data.model_parametres,
+          slug: data.slug,
+        }
 
-        setMainImage(imageUrl)
-        setQuantity(productData.quantity > 0 ? 1 : 0)
+        setProduct(normalized)
+        setMainImage(imageUrl || images[0] || null)
+        setQuantity(normalized.quantity > 0 ? 1 : 0)
       } catch (err) {
         console.error('Ошибка при загрузке товара:', err)
       }
     }
 
     if (id) fetchProduct()
-  }, [id])
+  }, [id, initialProduct])
+
+  // если initialProduct пришёл — инициализируем количество/картинку
+  useEffect(() => {
+    if (initialProduct) {
+      setQuantity(initialProduct.quantity > 0 ? 1 : 0)
+      setMainImage(initialProduct.image || initialProduct.images?.[0] || null)
+    }
+  }, [initialProduct])
 
   const { addItem, getTotalCount } = useCartStore()
 
@@ -97,13 +112,7 @@ export default function ProductPage() {
 
     if (afterCount > beforeCount) {
       toast.success('Товар добавлен в корзину!', {
-        position: 'top-right',
         autoClose: 4500,
-        hideProgressBar: false,
-        closeOnClick: false,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
         theme: 'light',
       })
       setAdded(true)
@@ -125,15 +134,16 @@ export default function ProductPage() {
       <Header />
       <main className="min-h-screen">
         <section className="mx-auto mt-[25px] max-w-[1720px] px-[10px] pb-[35px] text-black sm:px-[25px] md:mt-[100px] md:px-[50px] lg:pb-[100px] 2xl:px-[20px] 3xl:px-[10px]">
-          {/* Увеличение изображения */}
           <ToastContainer />
-          {zoomedImage && (
+
+          {/* Оверлей зума — показываем только если есть mainImage */}
+          {zoomed && mainImage && (
             <button
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-              onClick={() => setZoomedImage(null)}
+              onClick={() => setZoomed(false)}
             >
               <Image
-                src={mainImage ?? ''}
+                src={mainImage}
                 alt="Увеличенное изображение"
                 width={1000}
                 height={1000}
@@ -149,30 +159,38 @@ export default function ProductPage() {
               {/* Галерея */}
               <div className="flex flex-col-reverse justify-center gap-[10px] not-md:items-center md:flex-row lg:gap-4">
                 <div className="flex gap-4 overflow-auto md:flex-col">
-                  {(product.images ?? [product.image]).map((url, index) => (
-                    <button key={index} onClick={() => setMainImage(url)}>
-                      <Image
-                        src={url}
-                        alt={`${product.name} ${index + 1}`}
-                        width={600}
-                        height={600}
-                        className="h-[65px] w-[65px] cursor-pointer object-cover object-top transition md:h-[150px] md:w-[150px]"
-                      />
-                    </button>
-                  ))}
+                  {(product.images && product.images.length > 0
+                    ? product.images
+                    : [product.image]
+                  )
+                    .filter((url) => !!url && url.trim() !== '')
+                    .map((url, index) => (
+                      <button key={index} onClick={() => setMainImage(url)}>
+                        <Image
+                          src={url}
+                          alt={`${product.name} ${index + 1}`}
+                          width={600}
+                          height={600}
+                          className="h-[65px] w-[65px] cursor-pointer object-cover object-top transition md:h-[150px] md:w-[150px]"
+                        />
+                      </button>
+                    ))}
                 </div>
 
                 <button
-                  onClick={() => setZoomedImage(product.image)}
+                  onClick={() => mainImage && setZoomed(true)}
                   className="h-fit w-fit cursor-zoom-in"
+                  disabled={!mainImage}
                 >
-                  <Image
-                    src={mainImage ?? product.image}
-                    alt="Главное изображение"
-                    width={676}
-                    height={898}
-                    className="h-[452px] max-h-screen object-cover object-top md:h-[898px]"
-                  />
+                  {mainImage ? (
+                    <Image
+                      src={mainImage}
+                      alt="Главное изображение"
+                      width={676}
+                      height={898}
+                      className="h-[452px] max-h-screen object-cover object-top md:h-[898px]"
+                    />
+                  ) : null}
                 </button>
               </div>
 
@@ -219,11 +237,12 @@ export default function ProductPage() {
                         />
                       </Button>
                     </div>
+
                     <div className="mt-[15px] flex items-center gap-4">
-                      <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] hover:bg-transparent lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
+                      <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="h-full w-full cursor-pointer rounded-l-full border-r border-r-transparent pr-[20px] pl-[20px] duration-100 hover:border-r-black hover:bg-black/10"
+                          className="h-full w-full rounded-l-full border-r border-r-transparent px-[20px] duration-100 hover:border-r-black hover:bg-black/10"
                         >
                           -
                         </button>
@@ -234,11 +253,12 @@ export default function ProductPage() {
                           onClick={() =>
                             setQuantity(Math.min(10, quantity + 1))
                           }
-                          className="h-full w-full cursor-pointer rounded-r-full border-l border-l-transparent pr-[20px] pl-[20px] duration-100 hover:border-l-black hover:bg-black/10"
+                          className="h-full w-full rounded-r-full border-l border-l-transparent px-[20px] duration-100 hover:border-l-black hover:bg-black/10"
                         >
                           +
                         </button>
                       </div>
+
                       <Button
                         fullWidth
                         className="hover:none hover:bg-black/90"
@@ -259,7 +279,6 @@ export default function ProductPage() {
                   * В подарок при заказе предоставляется гайд по уходу
                 </p>
 
-                {/* Описание */}
                 <h3 className="mt-[25px] font-lighthaus text-[24px] leading-none lg:mt-[60px] lg:text-[35px]">
                   Описание
                 </h3>
@@ -267,11 +286,10 @@ export default function ProductPage() {
                   {product.description}
                 </p>
 
-                {/* Характеристики */}
-                <h3 className="mt-[30px] font-lighthaus text-[24px] leading-none lg:text-[35px]">
+                <h3 className="mt-[30px] font-lighthaus text-[24px] leading-none lg:mt-[35px]">
                   Характеристики
                 </h3>
-                <ul className="mt-[25px] space-y-[20px] text-[16px] leading-none lg:mt-[20px] lg:text-[24px]">
+                <ul className="mt-[20px] space-y-[20px] text-[16px] leading-none lg:text-[24px]">
                   <li>
                     <span className="text-black/60">Состав:</span>{' '}
                     {product.structure}
@@ -292,7 +310,7 @@ export default function ProductPage() {
 
                 <Link
                   href="/#доставка"
-                  className="mt-[25px] inline-block cursor-pointer text-[16px] underline lg:mt-[50px] lg:text-[24px]"
+                  className="mt-[25px] inline-block text-[16px] underline lg:mt-[50px] lg:text-[24px]"
                 >
                   Доставка, возврат и оплата
                 </Link>

@@ -12,7 +12,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ id, image, name, price }: ProductCardProps) => {
   return (
-    <Link href={`product/${id}`} className="h-full w-fit">
+    <Link href={`catalog/${id}`} className="h-full w-fit">
       <Image
         src={`${process.env.NEXT_PUBLIC_API_URL}${image.url}`}
         alt="Product Image"
