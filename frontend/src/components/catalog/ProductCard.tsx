@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 interface ProductCardProps {
-  id: string
+  slug: string
   image: {
     url: string
   }
@@ -10,9 +10,9 @@ interface ProductCardProps {
   price: string | number
 }
 
-const ProductCard = ({ id, image, name, price }: ProductCardProps) => {
+const ProductCard = ({ slug, image, name, price }: ProductCardProps) => {
   return (
-    <Link href={`catalog/${id}`} className="h-full w-fit">
+    <Link href={`catalog/${slug}`} className="h-full w-fit">
       <Image
         src={`${process.env.NEXT_PUBLIC_API_URL}${image.url}`}
         alt="Product Image"

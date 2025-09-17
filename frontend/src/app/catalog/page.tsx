@@ -41,7 +41,7 @@ export default function Home() {
           {products.map((product) => (
             <div key={product.id} className="flex items-center justify-center">
               <ProductCard
-                id={product.documentId}
+                slug={product.slug}
                 image={product.image}
                 name={product.name}
                 price={product.price}

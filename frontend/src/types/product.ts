@@ -10,4 +10,5 @@ export interface Product {
   }
   name: string
   price: string | number
+  slug: string
 }
