@@ -28,9 +28,7 @@ export default function ProductClient({
     initialProduct?.image ?? null,
   )
 
-  // Если хочешь — можно вообще не рефетчить, раз сервер уже дал данные:
   useEffect(() => {
-    // подстрахуемся: если initialProduct нет — тогда фетчим
     const needFetch = !initialProduct
     if (!needFetch) return
 
@@ -61,6 +59,7 @@ export default function ProductClient({
           .filter((u: string) => !!u)
 
         const normalized: Product = {
+          documentId: data.documentId,
           name: data.name,
           price: data.price,
           quantity: data.quantity,
@@ -85,7 +84,6 @@ export default function ProductClient({
     if (id) fetchProduct()
   }, [id, initialProduct])
 
-  // если initialProduct пришёл — инициализируем количество/картинку
   useEffect(() => {
     if (initialProduct) {
       setQuantity(initialProduct.quantity > 0 ? 1 : 0)
@@ -100,7 +98,7 @@ export default function ProductClient({
     const beforeCount = getTotalCount()
 
     addItem({
-      id: id as string,
+      documentId: product.documentId,
       name: product.name,
       image: product.image,
       price: product.price,

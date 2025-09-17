@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 export interface Product {
+  documentId: string
   name: string
   price: number
   quantity: number
@@ -41,8 +42,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const item = json?.data?.[0]
   if (!item) return null
 
-  // Если у тебя Strapi с attributes, замени item на item.attributes
-  const data = item // или: const data = item.attributes
+  const data = item
 
   const imageUrl = toAbs(data.image?.url)
   const images = (data.images ?? [])
@@ -50,6 +50,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     .filter(Boolean)
 
   return {
+    documentId: data.documentId,
     name: data.name,
     price: data.price,
     quantity: data.quantity,

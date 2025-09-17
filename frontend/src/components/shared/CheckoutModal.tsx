@@ -20,7 +20,7 @@ const options: { id: DeliveryMethod; label: string }[] = [
 ]
 
 type CartItem = {
-  id: string | number
+  documentId: string | number
   name: string
   price: number | string
   quantity: number
@@ -182,7 +182,8 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
     for (const i of cartItems) {
       const productDocumentId =
-        (typeof i.id === 'string' && i.id) || String(i.id ?? '')
+        (typeof i.documentId === 'string' && i.documentId) ||
+        String(i.documentId ?? '')
 
       if (
         !productDocumentId ||
@@ -558,7 +559,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                   <div className="space-y-4 sm:space-y-5">
                     {cartItems.map((item) => (
                       <div
-                        key={`${item.id}-${item.size ?? 'no-size'}`}
+                        key={`${item.documentId}-${item.size ?? 'no-size'}`}
                         className="flex items-center justify-between"
                       >
                         <p className="text-[18px] sm:text-[20px] md:text-[24px]">

@@ -4,7 +4,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 export interface CartItem {
-  id: string
+  documentId: string
   name: string
   image: string
   price: number
@@ -27,12 +27,12 @@ export const useCartStore = create<CartState>()(
       items: [],
       addItem: (item) => {
         const existing = get().items.find(
-          (i) => i.id === item.id && i.size === item.size,
+          (i) => i.documentId === item.documentId && i.size === item.size,
         )
         if (existing) {
           set({
             items: get().items.map((i) =>
-              i.id === item.id && i.size === item.size
+              i.documentId === item.documentId && i.size === item.size
                 ? {
                     ...i,
                     quantity: Math.min(10, i.quantity + item.quantity),
@@ -47,13 +47,13 @@ export const useCartStore = create<CartState>()(
       removeItem: (id, size) =>
         set({
           items: get().items.filter(
-            (item) => !(item.id === id && item.size === size),
+            (item) => !(item.documentId === id && item.size === size),
           ),
         }),
       updateQuantity: (id, size, delta) =>
         set({
           items: get().items.map((item) =>
-            item.id === id && item.size === size
+            item.documentId === id && item.size === size
               ? {
                   ...item,
                   quantity: Math.min(10, Math.max(1, item.quantity + delta)),
