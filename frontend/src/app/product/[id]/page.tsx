@@ -32,6 +32,7 @@ export default function ProductPage() {
   const router = useRouter()
   const [added, setAdded] = useState(false)
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [mainImage, setMainImage] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -67,6 +68,7 @@ export default function ProductPage() {
           model_parametres: productData.model_parametres,
         })
 
+        setMainImage(imageUrl)
         setQuantity(productData.quantity > 0 ? 1 : 0)
       } catch (err) {
         console.error('Ошибка при загрузке товара:', err)
@@ -131,7 +133,7 @@ export default function ProductPage() {
               onClick={() => setZoomedImage(null)}
             >
               <Image
-                src={zoomedImage}
+                src={mainImage ?? ''}
                 alt="Увеличенное изображение"
                 width={1000}
                 height={1000}
@@ -149,13 +151,13 @@ export default function ProductPage() {
               <div className="flex flex-col-reverse justify-center gap-[10px] not-md:items-center md:flex-row lg:gap-4">
                 <div className="flex gap-4 overflow-auto md:flex-col">
                   {(product.images ?? [product.image]).map((url, index) => (
-                    <button key={index} onClick={() => setZoomedImage(url)}>
+                    <button key={index} onClick={() => setMainImage(url)}>
                       <Image
                         src={url}
                         alt={`${product.name} ${index + 1}`}
                         width={600}
                         height={600}
-                        className="h-[65px] w-[65px] cursor-zoom-in object-cover object-top grayscale transition hover:grayscale-0 md:h-[150px] md:w-[150px]"
+                        className="h-[65px] w-[65px] cursor-pointer object-cover object-top transition md:h-[150px] md:w-[150px]"
                         unoptimized
                       />
                     </button>
@@ -167,7 +169,7 @@ export default function ProductPage() {
                   className="h-fit w-fit cursor-zoom-in"
                 >
                   <Image
-                    src={product.image}
+                    src={mainImage ?? product.image}
                     alt="Главное изображение"
                     width={676}
                     height={898}
