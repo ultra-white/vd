@@ -16,6 +16,10 @@ export interface Product {
   slug: string
 }
 
+type Props = {
+  params: Promise<{ slug: string }>
+}
+
 function toAbs(url?: string | null) {
   if (!url) return ''
   return url.startsWith('http')
@@ -60,12 +64,9 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
   }
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string }
-}): Promise<Metadata> {
-  const product = await fetchProductBySlug(params.slug)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const product = await fetchProductBySlug(slug)
 
   if (!product) {
     return {
@@ -79,13 +80,14 @@ export async function generateMetadata({
     title: `${product.name} | Vento D'oro`,
     description: product.description ?? '',
     alternates: {
-      canonical: `/catalog/${encodeURIComponent(params.slug)}`,
+      canonical: `/catalog/${encodeURIComponent(slug)}`,
     },
   }
 }
 
-export default async function Page({ params }: { params: { slug: string } }) {
-  const product = await fetchProductBySlug(params.slug)
+export default async function Page({ params }: Props) {
+  const { slug } = await params
+  const product = await fetchProductBySlug(slug)
   if (!product) notFound()
   return <ProductClient initialProduct={product} />
 }
