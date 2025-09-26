@@ -7,14 +7,14 @@ export default function CurrentCollection() {
   const items = [
     {
       title: 'Unita',
-      price: '20 000 руб',
+      price: '16 499 руб',
       image: '/images/unita.jpg',
       link: '/catalog/unita',
       alt: 'Женщина в пальто Unita',
     },
     {
       title: 'Velato',
-      price: '20 000 руб',
+      price: '16 499 руб',
       image: '/images/velato.jpg',
       link: '/catalog/velato',
       alt: 'Женщина в пальто Velato',
