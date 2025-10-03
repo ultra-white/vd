@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_product_razmer",
+  "info": {
+    "displayName": "Размер"
+  },
+  "options": {},
+  "attributes": {
+    "quantity": {
+      "type": "integer",
+      "required": true
+    },
+    "size": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "S",
+        "M",
+        "L"
+      ]
+    },
+    "russian_size": {
+      "type": "integer",
+      "required": true
+    },
+    "breast": {
+      "type": "integer",
+      "required": false
+    },
+    "waist": {
+      "type": "integer"
+    },
+    "hip": {
+      "type": "integer"
+    }
+  },
+  "config": {}
+}

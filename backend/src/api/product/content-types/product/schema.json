@@ -76,6 +76,11 @@
       "relation": "oneToMany",
       "target": "api::review.review",
       "mappedBy": "product"
+    },
+    "Sizes": {
+      "type": "component",
+      "component": "product.razmer",
+      "repeatable": true
     }
   }
 }

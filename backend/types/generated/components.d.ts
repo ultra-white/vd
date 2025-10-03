@@ -14,10 +14,27 @@ export interface OrderProduct extends Struct.ComponentSchema {
   };
 }
 
+export interface ProductRazmer extends Struct.ComponentSchema {
+  collectionName: 'components_product_razmer';
+  info: {
+    displayName: '\u0420\u0430\u0437\u043C\u0435\u0440';
+  };
+  attributes: {
+    breast: Schema.Attribute.Integer;
+    hip: Schema.Attribute.Integer;
+    quantity: Schema.Attribute.Integer & Schema.Attribute.Required;
+    russian_size: Schema.Attribute.Integer & Schema.Attribute.Required;
+    size: Schema.Attribute.Enumeration<['S', 'M', 'L']> &
+      Schema.Attribute.Required;
+    waist: Schema.Attribute.Integer;
+  };
+}
+
 declare module '@strapi/strapi' {
   export module Public {
     export interface ComponentSchemas {
       'order.product': OrderProduct;
+      'product.razmer': ProductRazmer;
     }
   }
 }
