@@ -9,7 +9,7 @@ export interface OrderProduct extends Struct.ComponentSchema {
   attributes: {
     product: Schema.Attribute.Relation<'oneToOne', 'api::product.product'>;
     quantity: Schema.Attribute.Integer & Schema.Attribute.Required;
-    size: Schema.Attribute.Enumeration<['s', 'm', 'l']> &
+    size: Schema.Attribute.Enumeration<['XS', 'S', 'M', 'L']> &
       Schema.Attribute.Required;
   };
 }

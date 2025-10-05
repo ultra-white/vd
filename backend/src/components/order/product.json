@@ -14,9 +14,10 @@
       "type": "enumeration",
       "required": true,
       "enum": [
-        "s",
-        "m",
-        "l"
+        "XS",
+        "S",
+        "M",
+        "L"
       ]
     },
     "product": {
