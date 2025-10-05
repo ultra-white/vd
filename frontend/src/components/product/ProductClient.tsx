@@ -19,13 +19,14 @@ type StrapiMedia = {
   height?: number
   formats?: Record<string, unknown>
 }
+const MAX_PER_ITEM = 10
 
 export default function ProductClient({
   initialProduct,
 }: {
   initialProduct?: Product | null
 }) {
-  const { id } = useParams()
+  const { slug } = useParams() as { slug: string }
   const [product, setProduct] = useState<Product | null>(initialProduct ?? null)
 
   // выбранный размер теперь из бэка
@@ -39,7 +40,6 @@ export default function ProductClient({
     initialProduct?.image ?? null,
   )
 
-  // Хелперы
   const toAbs = (u?: string | null) =>
     !u
       ? ''
@@ -56,7 +56,6 @@ export default function ProductClient({
     return (withStock ?? sizes[0]).size
   }
 
-  // Максимально допустимое количество для выбранного размера
   const selectedSizeStock = useMemo(() => {
     if (!product || !product.sizes || !selectedSize) return 0
     const s = product.sizes.find((x) => x.size === selectedSize)
@@ -64,34 +63,40 @@ export default function ProductClient({
   }, [product, selectedSize])
 
   useEffect(() => {
-    const needFetch = !initialProduct
+    const needFetch =
+      !initialProduct ||
+      !initialProduct?.sizes ||
+      initialProduct.sizes.length === 0
     if (!needFetch) return
 
     const fetchProduct = async () => {
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}?populate=*`,
-          {
-            headers: {
-              Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
-            },
+        const url =
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products` +
+          `?populate=*` +
+          `&filters[slug][$eq]=${encodeURIComponent(slug)}`
+
+        const res = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
           },
-        )
+        })
         const json = await res.json()
-        const data = json?.data
+
+        const data = Array.isArray(json?.data) ? json.data[0] : json?.data
         if (!data) return
 
-        // image (single Media)
+        // image (single)
         const imageUrl = toAbs(data.image?.url)
 
-        // images (multiple Media). В Strapi это может быть массив объектов медиа.
+        // images (multiple)
         const images: string[] = Array.isArray(data.images)
           ? (data.images as StrapiMedia[])
               .map((img) => toAbs(img?.url))
-              .filter((u): u is string => !!u)
+              .filter((u): u is string => !!u && u.trim() !== '')
           : []
 
-        // sizes (array)
+        // sizes
         const sizes: SizeItem[] | undefined = Array.isArray(data.sizes)
           ? (data.sizes as SizeItem[]).map((s) => ({
               ...s,
@@ -112,13 +117,12 @@ export default function ProductClient({
           model_parametres: data.model_parametres,
           slug: data.slug,
           sizes,
-          quantity: sumSizesQuantity(sizes), // общий остаток
+          quantity: sumSizesQuantity(sizes),
         }
 
         setProduct(normalized)
         setMainImage(imageUrl || images[0] || null)
 
-        // выбрать дефолтный размер и количество
         const def = pickDefaultSize(sizes)
         setSelectedSize(def)
         setQuantity(
@@ -131,8 +135,8 @@ export default function ProductClient({
       }
     }
 
-    if (id) fetchProduct()
-  }, [id, initialProduct])
+    if (slug) fetchProduct()
+  }, [slug, initialProduct])
 
   useEffect(() => {
     if (initialProduct) {
@@ -213,7 +217,13 @@ export default function ProductClient({
     }
   }, [])
 
-  const hasStock = (product?.quantity ?? 0) > 0
+  const hasStock = useMemo(() => {
+    if (!product) return false
+    if (Array.isArray(product.sizes) && product.sizes.length > 0) {
+      return product.sizes.some((s) => (Number(s.quantity) || 0) > 0)
+    }
+    return (Number(product.quantity) || 0) > 0
+  }, [product])
 
   return (
     <>
@@ -311,10 +321,10 @@ export default function ProductClient({
                             onClick={() => !out && setSelectedSize(s.size)}
                             active={isActive}
                             fullWidth
-                            disabled={out}
+                            variant={s.quantity > 0 ? 'default' : 'disabled'}
                             title={
                               out
-                                ? `Размер ${s.size} — нет в наличии`
+                                ? `Нет в наличии`
                                 : s.russian_size
                                   ? `RU ${s.russian_size}`
                                   : undefined
@@ -336,14 +346,14 @@ export default function ProductClient({
                     </div>
 
                     <div className="mt-[15px] flex items-center gap-4">
-                      <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
+                      <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] select-none lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
                         <button
                           onClick={() =>
                             setQuantity((q) =>
                               Math.max(selectedSizeStock > 0 ? 1 : 0, q - 1),
                             )
                           }
-                          className="h-full w-full rounded-l-full border-r border-r-transparent px-[20px] duration-100 hover:border-r-black hover:bg-black/10"
+                          className="h-full w-full cursor-pointer rounded-l-full border-r border-r-transparent pr-[20px] pl-[30px] duration-100 hover:border-r-black hover:bg-black/10"
                           disabled={selectedSizeStock === 0}
                         >
                           -
@@ -354,10 +364,13 @@ export default function ProductClient({
                         <button
                           onClick={() =>
                             setQuantity((q) =>
-                              Math.min(Math.max(selectedSizeStock, 0), q + 1),
+                              Math.min(
+                                Math.min(selectedSizeStock, MAX_PER_ITEM),
+                                q + 1,
+                              ),
                             )
                           }
-                          className="h-full w-full rounded-r-full border-l border-l-transparent px-[20px] duration-100 hover:border-l-black hover:bg-black/10"
+                          className="h-full w-full cursor-pointer rounded-r-full border-l border-l-transparent pr-[30px] pl-[20px] duration-100 hover:border-l-black hover:bg-black/10"
                           disabled={selectedSizeStock === 0}
                         >
                           +

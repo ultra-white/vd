@@ -30,7 +30,7 @@ export type SizeItem = {
 }
 
 type Props = {
-  params: Promise<{ slug: string }>
+  params: { slug: string }
 }
 
 function toAbs(url?: string | null) {
@@ -42,7 +42,7 @@ function toAbs(url?: string | null) {
 
 async function fetchProductBySlug(slug: string): Promise<Product | null> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/api/products?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=image&populate=images`,
+    `${process.env.NEXT_PUBLIC_API_URL}/api/products?filters[slug][$eq]=${encodeURIComponent(slug)}&populate=*`,
     {
       headers: {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
@@ -55,17 +55,23 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
   if (!item) return null
 
   const data = item
-
   const imageUrl = toAbs(data.image?.url)
   const images = (data.images ?? [])
     .map((img: { url: string }) => toAbs(img?.url))
     .filter(Boolean)
 
+  const sizes: SizeItem[] | undefined = Array.isArray(data.sizes)
+    ? (data.sizes as SizeItem[]).map((s) => ({
+        ...s,
+        quantity: Number(s.quantity) || 0,
+      }))
+    : undefined
+
   return {
     documentId: data.documentId,
     name: data.name,
     price: data.price,
-    quantity: data.quantity,
+    quantity: sizes?.reduce((sum, s) => sum + (s.quantity || 0), 0) ?? 0,
     image: imageUrl,
     images,
     description: data.description,
@@ -74,6 +80,7 @@ async function fetchProductBySlug(slug: string): Promise<Product | null> {
     product_parametres: data.product_parametres,
     model_parametres: data.model_parametres,
     slug: data.slug,
+    sizes,
   }
 }
 
