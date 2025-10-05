@@ -4,6 +4,7 @@ export default ({ env }) => ({
 	app: {
 		keys: env.array("APP_KEYS"),
 	},
-	url: env("SERVER_URL", "http://0.0.0.0:1337"),
-	proxy: true,
+	proxy: {
+		koa: process.env.NODE_ENV === "production",
+	},
 });
