@@ -65,9 +65,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
   // загрузка корзины + запрет скролла
   useEffect(() => {
-    const originalStyle = window.getComputedStyle(document.body).overflow
-    document.body.style.overflow = 'hidden'
-
     const loadCart = () => {
       const raw = localStorage.getItem('cart')
       try {
@@ -100,7 +97,6 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
     return () => {
       window.removeEventListener('storage', onStorage)
-      document.body.style.overflow = originalStyle
     }
   }, [])
 
@@ -278,13 +274,14 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 md:px-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm md:px-6">
       <div
         className="relative w-full max-w-[520px] rounded-xl bg-white px-7 pt-14 pb-7 text-black shadow-lg lg:rounded-2xl lg:px-[50px] lg:pt-[64px] lg:pb-[32px]"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
+          aria-label="Закрыть"
           className="absolute top-4 right-4 cursor-pointer sm:top-6 sm:right-6"
         >
           <Image

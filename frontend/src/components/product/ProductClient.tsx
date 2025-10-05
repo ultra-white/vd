@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
+import SizeTableModal from './SizeTableModal'
 
 type StrapiMedia = {
   id: number
@@ -29,7 +30,6 @@ export default function ProductClient({
   const { slug } = useParams() as { slug: string }
   const [product, setProduct] = useState<Product | null>(initialProduct ?? null)
 
-  // выбранный размер теперь из бэка
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [zoomed, setZoomed] = useState(false)
@@ -39,6 +39,8 @@ export default function ProductClient({
   const [mainImage, setMainImage] = useState<string | null>(
     initialProduct?.image ?? null,
   )
+
+  const [showSizeTable, setShowSizeTable] = useState(false)
 
   const toAbs = (u?: string | null) =>
     !u
@@ -153,7 +155,6 @@ export default function ProductClient({
     }
   }, [initialProduct])
 
-  // если изменили выбранный размер — поправить количество в рамках доступного остатка
   useEffect(() => {
     if (selectedSizeStock === 0) {
       setQuantity(0)
@@ -231,7 +232,11 @@ export default function ProductClient({
       <main className="min-h-screen">
         <section className="mx-auto mt-[25px] max-w-[1720px] px-[10px] pb-[35px] text-black sm:px-[25px] md:mt-[100px] md:px-[50px] lg:pb-[100px] 2xl:px-[20px] 3xl:px-[10px]">
           <ToastContainer />
-
+          <SizeTableModal
+            open={showSizeTable}
+            onClose={() => setShowSizeTable(false)}
+            sizes={product?.sizes}
+          />
           {zoomed && mainImage && (
             <button
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
@@ -334,7 +339,11 @@ export default function ProductClient({
                           </Button>
                         )
                       })}
-                      <Button className="flex h-[45px] w-[45px] items-center justify-center px-[20px] lg:h-[60px] lg:w-[60px]">
+                      <Button
+                        className="flex h-[45px] w-[45px] items-center justify-center px-[20px] lg:h-[60px] lg:w-[60px]"
+                        onClick={() => setShowSizeTable(true)}
+                        title="Таблица размеров"
+                      >
                         <Image
                           src="/images/document.svg"
                           width={24}
