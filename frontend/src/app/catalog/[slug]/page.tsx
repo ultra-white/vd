@@ -2,19 +2,31 @@ import ProductClient from '@/components/product/ProductClient'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-export interface Product {
+export type Product = {
   documentId: string
   name: string
   price: number
-  quantity: number
-  image: string
-  images?: string[]
-  description?: string
-  structure?: string
-  season?: string
-  product_parametres?: string
-  model_parametres?: string
+  description?: string | null
+  structure?: string | null
+  season?: string | null
+  product_parametres?: string | null
+  model_parametres?: string | null
   slug: string
+  image?: string | null
+  images?: string[]
+  quantity: number
+  sizes?: SizeItem[]
+}
+
+export type SizeItem = {
+  id: number
+  size: string
+  russian_size?: number | null
+  quantity: number
+  breast?: number | null
+  waist?: number | null
+  hip?: number | null
+  back?: number | null
 }
 
 type Props = {

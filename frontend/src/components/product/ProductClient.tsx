@@ -1,15 +1,24 @@
 'use client'
-import type { Product } from '@/app/catalog/[slug]/page' // импорт типа из сервера (или продублируй интерфейс)
+import type { Product, SizeItem } from '@/app/catalog/[slug]/page' // или продублируй как выше
 import ProductSkeleton from '@/components/product/Sceleton'
 import { Button, Footer, Header } from '@/components/shared'
 import { useCartStore } from '@/stores/cartStore'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ToastContainer, toast } from 'react-toastify'
 
-const sizes = ['XS', 'S', 'M']
+type StrapiMedia = {
+  id: number
+  url: string
+  name?: string
+  alternativeText?: string | null
+  caption?: string | null
+  width?: number
+  height?: number
+  formats?: Record<string, unknown>
+}
 
 export default function ProductClient({
   initialProduct,
@@ -18,7 +27,9 @@ export default function ProductClient({
 }) {
   const { id } = useParams()
   const [product, setProduct] = useState<Product | null>(initialProduct ?? null)
-  const [selectedSize, setSelectedSize] = useState('M')
+
+  // выбранный размер теперь из бэка
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [quantity, setQuantity] = useState(1)
   const [zoomed, setZoomed] = useState(false)
   const router = useRouter()
@@ -28,6 +39,30 @@ export default function ProductClient({
     initialProduct?.image ?? null,
   )
 
+  // Хелперы
+  const toAbs = (u?: string | null) =>
+    !u
+      ? ''
+      : u.startsWith('http')
+        ? u
+        : `${process.env.NEXT_PUBLIC_API_URL}${u}`
+
+  const sumSizesQuantity = (sizes?: SizeItem[]) =>
+    (sizes ?? []).reduce((acc, s) => acc + (Number(s.quantity) || 0), 0)
+
+  const pickDefaultSize = (sizes?: SizeItem[]) => {
+    if (!sizes || sizes.length === 0) return null
+    const withStock = sizes.find((s) => (s.quantity ?? 0) > 0)
+    return (withStock ?? sizes[0]).size
+  }
+
+  // Максимально допустимое количество для выбранного размера
+  const selectedSizeStock = useMemo(() => {
+    if (!product || !product.sizes || !selectedSize) return 0
+    const s = product.sizes.find((x) => x.size === selectedSize)
+    return s ? Number(s.quantity) || 0 : 0
+  }, [product, selectedSize])
+
   useEffect(() => {
     const needFetch = !initialProduct
     if (!needFetch) return
@@ -35,7 +70,7 @@ export default function ProductClient({
     const fetchProduct = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}?populate=image&populate=images`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/products/${id}?populate=*`,
           {
             headers: {
               Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRAPI_TOKEN}`,
@@ -43,27 +78,32 @@ export default function ProductClient({
           },
         )
         const json = await res.json()
-        const data = json.data
+        const data = json?.data
         if (!data) return
 
-        const toAbs = (u?: string) =>
-          !u
-            ? ''
-            : u.startsWith('http')
-              ? u
-              : `${process.env.NEXT_PUBLIC_API_URL}${u}`
-
+        // image (single Media)
         const imageUrl = toAbs(data.image?.url)
-        const images = (data.images || [])
-          .map((img: { url: string }) => toAbs(img?.url))
-          .filter((u: string) => !!u)
+
+        // images (multiple Media). В Strapi это может быть массив объектов медиа.
+        const images: string[] = Array.isArray(data.images)
+          ? (data.images as StrapiMedia[])
+              .map((img) => toAbs(img?.url))
+              .filter((u): u is string => !!u)
+          : []
+
+        // sizes (array)
+        const sizes: SizeItem[] | undefined = Array.isArray(data.sizes)
+          ? (data.sizes as SizeItem[]).map((s) => ({
+              ...s,
+              quantity: Number(s.quantity) || 0,
+            }))
+          : undefined
 
         const normalized: Product = {
           documentId: data.documentId,
           name: data.name,
           price: data.price,
-          quantity: data.quantity,
-          image: imageUrl,
+          image: imageUrl || null,
           images,
           description: data.description,
           structure: data.structure,
@@ -71,11 +111,21 @@ export default function ProductClient({
           product_parametres: data.product_parametres,
           model_parametres: data.model_parametres,
           slug: data.slug,
+          sizes,
+          quantity: sumSizesQuantity(sizes), // общий остаток
         }
 
         setProduct(normalized)
         setMainImage(imageUrl || images[0] || null)
-        setQuantity(normalized.quantity > 0 ? 1 : 0)
+
+        // выбрать дефолтный размер и количество
+        const def = pickDefaultSize(sizes)
+        setSelectedSize(def)
+        setQuantity(
+          def && (sizes?.find((x) => x.size === def)?.quantity ?? 0) > 0
+            ? 1
+            : 0,
+        )
       } catch (err) {
         console.error('Ошибка при загрузке товара:', err)
       }
@@ -86,27 +136,62 @@ export default function ProductClient({
 
   useEffect(() => {
     if (initialProduct) {
-      setQuantity(initialProduct.quantity > 0 ? 1 : 0)
       setMainImage(initialProduct.image || initialProduct.images?.[0] || null)
+      // дефолтный размер и количество
+      const def = pickDefaultSize(initialProduct.sizes)
+      setSelectedSize(def)
+      setQuantity(
+        def &&
+          (initialProduct.sizes?.find((x) => x.size === def)?.quantity ?? 0) > 0
+          ? 1
+          : 0,
+      )
     }
   }, [initialProduct])
+
+  // если изменили выбранный размер — поправить количество в рамках доступного остатка
+  useEffect(() => {
+    if (selectedSizeStock === 0) {
+      setQuantity(0)
+    } else {
+      setQuantity((q) => (q === 0 ? 1 : Math.min(q, selectedSizeStock)))
+    }
+  }, [selectedSizeStock])
 
   const { addItem, getTotalCount } = useCartStore()
 
   const handleAddToCart = () => {
     if (!product) return
-    const beforeCount = getTotalCount()
+    if (!selectedSize) {
+      toast.warn('Пожалуйста, выберите размер.')
+      return
+    }
+    if (selectedSizeStock <= 0) {
+      toast.warn('Выбранного размера нет в наличии.')
+      return
+    }
+    if (quantity <= 0) {
+      toast.warn('Укажите количество.')
+      return
+    }
+    if (quantity > selectedSizeStock) {
+      toast.warn(
+        `Доступно только ${selectedSizeStock} шт. для размера ${selectedSize}.`,
+      )
+      setQuantity(selectedSizeStock)
+      return
+    }
 
+    const beforeCount = getTotalCount()
     addItem({
       documentId: product.documentId,
       name: product.name,
-      image: product.image,
+      image: product.image || '',
       price: product.price,
       quantity,
       size: selectedSize,
       slug: product.slug,
     })
-
     const afterCount = getTotalCount()
 
     if (afterCount > beforeCount) {
@@ -128,6 +213,8 @@ export default function ProductClient({
     }
   }, [])
 
+  const hasStock = (product?.quantity ?? 0) > 0
+
   return (
     <>
       <Header />
@@ -135,7 +222,6 @@ export default function ProductClient({
         <section className="mx-auto mt-[25px] max-w-[1720px] px-[10px] pb-[35px] text-black sm:px-[25px] md:mt-[100px] md:px-[50px] lg:pb-[100px] 2xl:px-[20px] 3xl:px-[10px]">
           <ToastContainer />
 
-          {/* Оверлей зума — показываем только если есть mainImage */}
           {zoomed && mainImage && (
             <button
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
@@ -164,9 +250,9 @@ export default function ProductClient({
                   )
                     .filter((url) => !!url && url.trim() !== '')
                     .map((url, index) => (
-                      <button key={index} onClick={() => setMainImage(url)}>
+                      <button key={index} onClick={() => setMainImage(url!)}>
                         <Image
-                          src={url}
+                          src={url!}
                           alt={`${product.name} ${index + 1}`}
                           width={600}
                           height={600}
@@ -212,20 +298,32 @@ export default function ProductClient({
                   {Number(product.price)} руб
                 </p>
 
-                {quantity > 0 ? (
+                {hasStock ? (
                   <>
-                    {/* Размеры */}
+                    {/* Размеры из бэка */}
                     <div className="mt-[25px] flex gap-2 lg:mt-[75px]">
-                      {sizes.map((size) => (
-                        <Button
-                          key={size}
-                          onClick={() => setSelectedSize(size)}
-                          active={selectedSize === size}
-                          fullWidth
-                        >
-                          {size}
-                        </Button>
-                      ))}
+                      {(product.sizes ?? []).map((s) => {
+                        const isActive = selectedSize === s.size
+                        const out = (s.quantity ?? 0) <= 0
+                        return (
+                          <Button
+                            key={s.id}
+                            onClick={() => !out && setSelectedSize(s.size)}
+                            active={isActive}
+                            fullWidth
+                            disabled={out}
+                            title={
+                              out
+                                ? `Размер ${s.size} — нет в наличии`
+                                : s.russian_size
+                                  ? `RU ${s.russian_size}`
+                                  : undefined
+                            }
+                          >
+                            {s.size}
+                          </Button>
+                        )
+                      })}
                       <Button className="flex h-[45px] w-[45px] items-center justify-center px-[20px] lg:h-[60px] lg:w-[60px]">
                         <Image
                           src="/images/document.svg"
@@ -240,8 +338,13 @@ export default function ProductClient({
                     <div className="mt-[15px] flex items-center gap-4">
                       <div className="relative flex h-[45px] items-center gap-[10px] rounded-full border-[2px] text-[16px] lg:h-[60px] lg:gap-[50px] lg:text-[24px]">
                         <button
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                          onClick={() =>
+                            setQuantity((q) =>
+                              Math.max(selectedSizeStock > 0 ? 1 : 0, q - 1),
+                            )
+                          }
                           className="h-full w-full rounded-l-full border-r border-r-transparent px-[20px] duration-100 hover:border-r-black hover:bg-black/10"
+                          disabled={selectedSizeStock === 0}
                         >
                           -
                         </button>
@@ -250,9 +353,12 @@ export default function ProductClient({
                         </span>
                         <button
                           onClick={() =>
-                            setQuantity(Math.min(10, quantity + 1))
+                            setQuantity((q) =>
+                              Math.min(Math.max(selectedSizeStock, 0), q + 1),
+                            )
                           }
                           className="h-full w-full rounded-r-full border-l border-l-transparent px-[20px] duration-100 hover:border-l-black hover:bg-black/10"
+                          disabled={selectedSizeStock === 0}
                         >
                           +
                         </button>
@@ -265,6 +371,7 @@ export default function ProductClient({
                           added ? () => router.push('/cart') : handleAddToCart
                         }
                         theme="dark"
+                        disabled={!selectedSize || selectedSizeStock === 0}
                       >
                         {added ? 'Перейти в корзину' : 'Добавить в корзину'}
                       </Button>

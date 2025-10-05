@@ -13,6 +13,7 @@
       "type": "enumeration",
       "required": true,
       "enum": [
+        "XS",
         "S",
         "M",
         "L"

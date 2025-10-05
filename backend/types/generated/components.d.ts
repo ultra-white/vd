@@ -25,7 +25,7 @@ export interface ProductRazmer extends Struct.ComponentSchema {
     hip: Schema.Attribute.Integer;
     quantity: Schema.Attribute.Integer & Schema.Attribute.Required;
     russian_size: Schema.Attribute.Integer & Schema.Attribute.Required;
-    size: Schema.Attribute.Enumeration<['S', 'M', 'L']> &
+    size: Schema.Attribute.Enumeration<['XS', 'S', 'M', 'L']> &
       Schema.Attribute.Required;
     waist: Schema.Attribute.Integer;
   };
