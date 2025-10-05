@@ -30,7 +30,7 @@ export type SizeItem = {
 }
 
 type Props = {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 function toAbs(url?: string | null) {
