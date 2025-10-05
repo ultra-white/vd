@@ -20,6 +20,7 @@ export interface ProductRazmer extends Struct.ComponentSchema {
     displayName: '\u0420\u0430\u0437\u043C\u0435\u0440';
   };
   attributes: {
+    back: Schema.Attribute.Integer;
     breast: Schema.Attribute.Integer;
     hip: Schema.Attribute.Integer;
     quantity: Schema.Attribute.Integer & Schema.Attribute.Required;

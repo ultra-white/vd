@@ -34,10 +34,6 @@
         "images"
       ]
     },
-    "quantity": {
-      "type": "integer",
-      "required": true
-    },
     "images": {
       "type": "media",
       "multiple": true,
@@ -77,7 +73,7 @@
       "target": "api::review.review",
       "mappedBy": "product"
     },
-    "Sizes": {
+    "sizes": {
       "type": "component",
       "component": "product.razmer",
       "repeatable": true
