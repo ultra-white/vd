@@ -237,7 +237,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
                 __component: 'order.product',
                 product: item.product,
                 quantity: item.quantity,
-                size: item.size ? item.size.toLowerCase() : null,
+                size: item.size ? item.size.toUpperCase() : null,
               })),
             },
           }),
