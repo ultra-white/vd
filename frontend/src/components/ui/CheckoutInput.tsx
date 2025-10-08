@@ -98,10 +98,7 @@ export default function CheckoutInput({
         aria-invalid={shouldShow}
         aria-describedby={shouldShow ? errorId : undefined}
         required={required}
-        className={[
-          'w-full border-b py-1 text-[16px] outline-none placeholder:text-black/40 md:text-[20px]',
-          shouldShow ? 'border-red-500' : '',
-        ].join(' ')}
+        className={inputClass}
         {...rest}
       />
       <div className={reserveErrorSpace ? 'min-h-[20px]' : ''}>
