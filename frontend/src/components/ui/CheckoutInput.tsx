@@ -2,6 +2,7 @@
 
 import clsx from 'clsx'
 import { useId, useState } from 'react'
+import { IMaskInput } from 'react-imask'
 
 type CheckoutInputProps = Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
@@ -12,7 +13,6 @@ type CheckoutInputProps = Omit<
   onChange: (value: string) => void
   label?: string
   error?: string
-  normalize?: (value: string) => string
   validate?: (value: string) => string | null
   validateOnChange?: boolean
   showErrorNow?: boolean
@@ -25,7 +25,6 @@ export default function CheckoutInput({
   onChange,
   label,
   error,
-  normalize,
   validate,
   validateOnChange = false,
   showErrorNow = false,
@@ -42,9 +41,8 @@ export default function CheckoutInput({
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value
-    const next = normalize ? normalize(raw) : raw
-    onChange(next)
-    if (validateOnChange && validate) setInnerError(validate(next))
+    onChange(raw)
+    if (validateOnChange && validate) setInnerError(validate(raw))
   }
 
   function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
@@ -56,6 +54,33 @@ export default function CheckoutInput({
   const message = (error ?? innerError) || ''
   const hasError = !!message
   const shouldShow = hasError && (showErrorNow || touched || validateOnChange)
+
+  const inputClass = clsx(
+    'w-full border-b py-1 text-[16px] outline-none placeholder:text-black/40 md:text-[20px]',
+    className,
+  )
+  const mask = '+7 (000) 000-00-00'
+
+  if (label === 'phone') {
+    return (
+      <>
+        <IMaskInput
+          mask={mask}
+          onChange={handleChange}
+          value={value}
+          className={inputClass}
+          {...rest}
+        />
+        <div className={reserveErrorSpace ? 'min-h-[20px]' : ''}>
+          {shouldShow && (
+            <p id={errorId} className="text-sm text-red-600">
+              {message}
+            </p>
+          )}
+        </div>
+      </>
+    )
+  }
 
   return (
     <div className={clsx('w-full', className)}>

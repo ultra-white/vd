@@ -60,7 +60,7 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
   const [triedStep2, setTriedStep2] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  const phoneRe = /^\+?[0-9\s\-()]{10,20}$/
+  const phoneRe = /^\+?[0-9\s\-()]{17,20}$/
   const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   // загрузка корзины + запрет скролла
@@ -313,11 +313,11 @@ export default function CheckoutModal({ onClose }: CheckoutModalProps) {
 
             <CheckoutInput
               name="phone"
+              label="phone"
               value={phone}
               onChange={setPhone}
               placeholder="Введите номер телефона"
               inputMode="tel"
-              normalize={(v) => v.replace(/[^\d+()\-\s]/g, '')}
               validate={(v) => (phoneRe.test(v) ? null : 'Неверный телефон')}
               validateOnChange
               required
