@@ -242,13 +242,24 @@ export default function ProductClient({
               className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
               onClick={() => setZoomed(false)}
             >
-              <Image
-                src={mainImage}
-                alt="Увеличенное изображение"
-                width={1000}
-                height={1000}
-                className="max-h-[90vh] w-auto cursor-zoom-out object-contain"
-              />
+              <div className="relative">
+                <Image
+                  src={mainImage}
+                  alt="Увеличенное изображение"
+                  width={1000}
+                  height={1000}
+                  className="max-h-[90vh] w-auto cursor-zoom-out object-contain"
+                />
+                <div className="absolute top-5 right-5 cursor-pointer p-2">
+                  <Image
+                    src="/images/cross.svg"
+                    height={24}
+                    width={24}
+                    alt="cross"
+                    className="h-[16px] w-[16px] md:h-[21px] md:w-[21px]"
+                  />
+                </div>
+              </div>
             </button>
           )}
 
