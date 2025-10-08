@@ -57,7 +57,7 @@ export default function CheckoutInput({
 
   const inputClass = clsx(
     'w-full border-b py-1 text-[16px] outline-none placeholder:text-black/40 md:text-[20px]',
-    className,
+    shouldShow ? 'border-red-500' : '',
   )
   const mask = '+7 (000) 000-00-00'
 
