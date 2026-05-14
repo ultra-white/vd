@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'ventodoro.ru',
+        hostname: 'ventodoro.white-dev.pro',
         pathname: '/uploads/**',
       },
     ],
