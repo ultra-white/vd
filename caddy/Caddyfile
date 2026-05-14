@@ -4,22 +4,22 @@ ventodoro.white-dev.pro {
 			max_size 50MB
 		}
 
-		reverse_proxy backend:1337
+		reverse_proxy backend:1338
 	}
 
 	handle /uploads/* {
-		reverse_proxy backend:1337
+		reverse_proxy backend:1338
 	}
 
 	handle {
-		reverse_proxy frontend:3000
+		reverse_proxy frontend:3001
 	}
 }
 
-admin.ventodoro.ru {
+admin-ventodoro.white-dev.pro {
 	request_body {
 		max_size 50MB
 	}
 
-	reverse_proxy backend:1337
+	reverse_proxy backend:1338
 }
