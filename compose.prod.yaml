@@ -48,19 +48,19 @@ services:
     networks:
       - ventodoro
 
-  caddy:
-    image: caddy:alpine
-    container_name: caddy
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./caddy/data:/data
-      - ./caddy/config:/config
-    networks:
-      - ventodoro
+  # caddy:
+  #   image: caddy:alpine
+  #   container_name: caddy
+  #   restart: always
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+  #     - ./caddy/data:/data
+  #     - ./caddy/config:/config
+  #   networks:
+  #     - ventodoro
 
   database:
     image: postgres:17.4
@@ -74,8 +74,6 @@ services:
       - postgres-passwd
     networks:
       - ventodoro
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - ./psql/data:/var/lib/postgresql/data
     restart: always
