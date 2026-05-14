@@ -82,7 +82,8 @@ services:
 
 networks:
   ventodoro:
-    driver: bridge
+    external: true
+    name: ventodoro
 
 secrets:
   postgres-passwd:
